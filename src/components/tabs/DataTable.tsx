@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { useCRM } from "@/context/CRMProvider";
-import type { BoilerAction, CRMRecord, InstallationLocation, ServiceType, Status, Visit } from "@/lib/types";
+import type { BoilerAction, CRMRecord, FinalState, InstallationLocation, ServiceType, Status, Visit } from "@/lib/types";
 import { calculateTempsAttente } from "@/lib/calculateTempsAttente";
 import { nextInnerVisitLabel } from "@/lib/visitNaming";
 import { ALL_BRANDS, BRAND_MODELS } from "@/lib/brandModels";
@@ -14,16 +14,15 @@ import { MaintenanceClock } from "@/components/cards/MaintenanceClock";
 import { DailyPlanToggle } from "@/components/cards/DailyPlanToggle";
 import { HealthyRunTime } from "@/components/cards/HealthyRunTime";
 import { TasksChecklist } from "@/components/cards/TasksChecklist";
-import { ChevronDown, ChevronRight, Trash2, Search, Hash } from "lucide-react";
+import { ChevronDown, ChevronRight, Trash2, Search, Hash, Pencil, Check, X } from "lucide-react";
 
-const STATUSES: Status[] = ["new", "inProgress", "waitingParts", "done", "cancelled"];
+const STATUSES: Status[] = ["waiting", "done", "cancelled"];
+const FINAL_STATES: FinalState[] = ["awaitingParts", "enRoute", "warrantyFollowUp"];
 const SERVICE_TYPES: ServiceType[] = ["boiler", "heating", "plumbing", "pvc", "gas", "handyman", "allWorks"];
 const BOILER_ACTIONS: BoilerAction[] = ["repair", "maintenance", "descaling", "remove", "install"];
 
 const STATUS_COLOR: Record<Status, string> = {
-  new: "bg-sky-500/20 text-sky-200 border-sky-500/40",
-  inProgress: "bg-amber-500/20 text-amber-200 border-amber-500/40",
-  waitingParts: "bg-violet-500/20 text-violet-200 border-violet-500/40",
+  waiting: "bg-amber-500/20 text-amber-200 border-amber-500/40",
   done: "bg-emerald-500/20 text-emerald-200 border-emerald-500/40",
   cancelled: "bg-slate-500/20 text-slate-300 border-slate-500/40",
 };
@@ -129,6 +128,7 @@ export function DataTable() {
                         <select className={inp} value={r.installationLocation} onChange={(e) => updateRecord(r.id, { installationLocation: e.target.value as InstallationLocation })}>
                           <option value="home">{t(lang, "locHome")}</option>
                           <option value="workshop">{t(lang, "locWorkshop")}</option>
+                          <option value="projects">🏗️ {t(lang, "locProjects")}</option>
                         </select>
                       </Field>
                       <Field label={t(lang, "status")}>
@@ -136,10 +136,24 @@ export function DataTable() {
                           const v = e.target.value as Status;
                           const patch: Partial<CRMRecord> = { status: v };
                           if (v === "done" && !r.completionDate) patch.completionDate = new Date().toISOString();
+                          if (v !== "waiting") patch.finalState = undefined;
                           updateRecord(r.id, patch);
                         }}>
                           {STATUSES.map((s) => (
                             <option key={s} value={s}>{t(lang, "st_" + s)}</option>
+                          ))}
+                        </select>
+                      </Field>
+                      <Field label={t(lang, "finalState")}>
+                        <select
+                          className={inp}
+                          value={r.finalState ?? ""}
+                          disabled={r.status !== "waiting"}
+                          onChange={(e) => updateRecord(r.id, { finalState: (e.target.value || undefined) as FinalState | undefined })}
+                        >
+                          <option value="">{t(lang, "fs_none")}</option>
+                          {FINAL_STATES.map((fs) => (
+                            <option key={fs} value={fs}>{t(lang, "fs_" + fs)}</option>
                           ))}
                         </select>
                       </Field>
