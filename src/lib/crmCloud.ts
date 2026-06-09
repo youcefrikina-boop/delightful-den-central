@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { CRMRecord } from "@/lib/types";
+import { normalizeStatus, inferFinalState, type CRMRecord } from "@/lib/types";
 
 const STORAGE_KEY = "dafatek_crm_records_v4";
 const LANG_KEY = "dafatek_crm_lang_v2";
@@ -12,6 +12,17 @@ interface RecordRow {
   updated_at: string;
 }
 
+function migrateRecord(r: CRMRecord): CRMRecord {
+  const rawStatus = (r as unknown as { status?: string }).status;
+  const newStatus = normalizeStatus(rawStatus);
+  const inferred = inferFinalState(rawStatus);
+  return {
+    ...r,
+    status: newStatus,
+    finalState: r.finalState ?? (newStatus === "waiting" ? inferred : undefined),
+  };
+}
+
 export async function fetchRecords(userId: string): Promise<CRMRecord[]> {
   const { data, error } = await supabase
     .from("crm_records")
@@ -19,7 +30,7 @@ export async function fetchRecords(userId: string): Promise<CRMRecord[]> {
     .eq("owner_id", userId)
     .order("updated_at", { ascending: false });
   if (error) throw error;
-  return (data as unknown as RecordRow[]).map((r) => ({ ...r.data, id: r.id }));
+  return (data as unknown as RecordRow[]).map((r) => migrateRecord({ ...r.data, id: r.id }));
 }
 
 export async function insertRecord(userId: string, record: CRMRecord) {
