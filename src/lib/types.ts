@@ -9,7 +9,7 @@ export type ServiceType =
   | "handyman"
   | "allWorks";
 
-export type InstallationLocation = "home" | "workshop";
+export type InstallationLocation = "home" | "workshop" | "projects";
 
 export type BoilerAction =
   | "repair"
@@ -18,7 +18,21 @@ export type BoilerAction =
   | "remove"
   | "install";
 
-export type Status = "new" | "inProgress" | "waitingParts" | "done" | "cancelled";
+export type Status = "waiting" | "done" | "cancelled";
+export type FinalState = "awaitingParts" | "enRoute" | "warrantyFollowUp";
+
+/** Map any legacy status string ("new", "inProgress", "waitingParts") to the new 3-value enum. */
+export function normalizeStatus(s: string | undefined | null): Status {
+  if (s === "done" || s === "cancelled") return s;
+  return "waiting";
+}
+
+/** Infer a finalState from a legacy status when migrating older records. */
+export function inferFinalState(s: string | undefined | null): FinalState | undefined {
+  if (s === "waitingParts") return "awaitingParts";
+  if (s === "inProgress") return "enRoute";
+  return undefined;
+}
 
 export type PaymentColor = "paid" | "partial" | "debt" | "custom" | "empty";
 
@@ -70,6 +84,7 @@ export interface CRMRecord {
   installationLocation: InstallationLocation;
   boilerAction?: BoilerAction;
   status: Status;
+  finalState?: FinalState;
   fault: string;
   diagnosticFinal?: string;
   assignedTech?: string;
