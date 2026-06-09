@@ -201,7 +201,15 @@ export function DataTable() {
                     <HealthyRunTime record={r} />
                   </div>
 
-                  <VisitsBlock record={r} onAdd={(v) => updateRecord(r.id, { visits: [...r.visits, v] })} />
+                  <VisitsBlock
+                    record={r}
+                    onAdd={(v) => updateRecord(r.id, { visits: [...r.visits, v] })}
+                    onUpdateVisit={(idx, patch) =>
+                      updateRecord(r.id, {
+                        visits: r.visits.map((vv, i) => (i === idx ? { ...vv, ...patch } : vv)),
+                      })
+                    }
+                  />
 
                   <div className="flex flex-wrap items-center gap-2 pt-2">
                     <GpsButton record={r} />
@@ -237,20 +245,75 @@ function Field({ label, children, className = "" }: { label: string; children: R
   );
 }
 
-function VisitsBlock({ record, onAdd }: { record: CRMRecord; onAdd: (v: Visit) => void }) {
+function VisitsBlock({
+  record,
+  onAdd,
+  onUpdateVisit,
+}: {
+  record: CRMRecord;
+  onAdd: (v: Visit) => void;
+  onUpdateVisit: (index: number, patch: Partial<Visit>) => void;
+}) {
   const { lang } = useCRM();
   const [note, setNote] = useState("");
+  const [editingIdx, setEditingIdx] = useState<number | null>(null);
+  const [draft, setDraft] = useState("");
+
   return (
     <div className="rounded-xl border border-slate-700/60 bg-[#0d1a2e]/40 p-3">
       <div className="mb-2 text-xs uppercase text-slate-400">{t(lang, "addVisit")}</div>
       <ul className="space-y-1 text-sm text-slate-200">
         {record.visits.length === 0 && <li className="text-xs text-slate-500">—</li>}
-        {record.visits.map((v, i) => (
-          <li key={i} className="flex items-baseline justify-between gap-2 border-b border-slate-800/60 pb-1">
-            <span><span className="font-semibold text-cyan-300">{v.label}</span> — {v.notes}</span>
-            <span className="text-xs text-slate-500">{new Date(v.date).toLocaleDateString()}</span>
-          </li>
-        ))}
+        {record.visits.map((v, i) => {
+          const isEditing = editingIdx === i;
+          return (
+            <li key={i} className="flex items-center gap-2 border-b border-slate-800/60 pb-1">
+              <span className="font-semibold text-cyan-300 shrink-0">{v.label}</span>
+              {isEditing ? (
+                <input
+                  autoFocus
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") { onUpdateVisit(i, { notes: draft }); setEditingIdx(null); }
+                    if (e.key === "Escape") setEditingIdx(null);
+                  }}
+                  className="flex-1 rounded-md border border-cyan-500/50 bg-[#0d1a2e] px-2 py-0.5 text-sm text-slate-100"
+                />
+              ) : (
+                <span className="flex-1 text-slate-200">— {v.notes ?? "—"}</span>
+              )}
+              <span className="text-xs text-slate-500">{new Date(v.date).toLocaleDateString()}</span>
+              {isEditing ? (
+                <>
+                  <button
+                    onClick={() => { onUpdateVisit(i, { notes: draft }); setEditingIdx(null); }}
+                    className="grid size-6 place-items-center rounded-md bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30"
+                    aria-label="save"
+                  >
+                    <Check className="size-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setEditingIdx(null)}
+                    className="grid size-6 place-items-center rounded-md bg-slate-700/40 text-slate-300 hover:bg-slate-700/60"
+                    aria-label="cancel"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => { setDraft(v.notes ?? ""); setEditingIdx(i); }}
+                  className="grid size-6 place-items-center rounded-md bg-sky-500/20 text-sky-300 hover:bg-sky-500/30"
+                  aria-label={t(lang, "editVisit")}
+                  title={t(lang, "editVisit")}
+                >
+                  <Pencil className="size-3.5" />
+                </button>
+              )}
+            </li>
+          );
+        })}
       </ul>
       <div className="mt-2 flex gap-2">
         <input
