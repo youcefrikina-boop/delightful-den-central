@@ -113,7 +113,7 @@ export function CRMProvider({
         serviceType: r.serviceType ?? "boiler",
         installationLocation: r.installationLocation ?? "home",
         boilerAction: r.boilerAction,
-        status: r.status ?? "new",
+        status: r.status ?? "waiting",
         fault: r.fault ?? "",
         payment: r.payment ?? {},
         warranty: r.warranty,

@@ -18,7 +18,7 @@ export function Statistics() {
   const data = useMemo(() => {
     const total = records.length;
     const done = records.filter((r) => r.status === "done").length;
-    const inProg = records.filter((r) => r.status === "inProgress" || r.status === "waitingParts" || r.status === "new").length;
+    const inProg = records.filter((r) => r.status === "waiting").length;
 
     const byLoc = (loc: InstallationLocation) => {
       const list = records.filter((r) => r.installationLocation === loc);
@@ -28,17 +28,26 @@ export function Statistics() {
 
     const home = byLoc("home");
     const workshop = byLoc("workshop");
-    const projects = { count: 0, done: 0, rate: 0 };
+    const projects = byLoc("projects");
 
     const services = SERVICES.map((s) => {
       const list = records.filter((r) => r.serviceType === s.key);
       const d = list.filter((r) => r.status === "done").length;
       const rate = list.length ? Math.round((d / list.length) * 100) : 0;
-      const home = list.filter((r) => r.installationLocation === "home");
-      const workshop = list.filter((r) => r.installationLocation === "workshop");
-      const homeRate = home.length ? Math.round((home.filter((r) => r.status === "done").length / home.length) * 100) : 0;
-      const wsRate = workshop.length ? Math.round((workshop.filter((r) => r.status === "done").length / workshop.length) * 100) : 0;
-      return { ...s, count: list.length, done: d, rate, home: { n: home.length, r: homeRate }, workshop: { n: workshop.length, r: wsRate }, projects: { n: 0, r: 0 } };
+      const homeList = list.filter((r) => r.installationLocation === "home");
+      const workshopList = list.filter((r) => r.installationLocation === "workshop");
+      const projectsList = list.filter((r) => r.installationLocation === "projects");
+      const ratePct = (arr: typeof list) =>
+        arr.length ? Math.round((arr.filter((r) => r.status === "done").length / arr.length) * 100) : 0;
+      return {
+        ...s,
+        count: list.length,
+        done: d,
+        rate,
+        home: { n: homeList.length, r: ratePct(homeList) },
+        workshop: { n: workshopList.length, r: ratePct(workshopList) },
+        projects: { n: projectsList.length, r: ratePct(projectsList) },
+      };
     });
 
     return { total, done, inProg, home, workshop, projects, services };
