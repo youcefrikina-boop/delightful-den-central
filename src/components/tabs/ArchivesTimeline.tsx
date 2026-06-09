@@ -60,7 +60,7 @@ export function ArchivesTimeline() {
                       {t(lang, "st_" + r.status)}
                     </span>
                     <button
-                      onClick={() => updateRecord(r.id, { status: "inProgress", archivedAt: undefined })}
+                      onClick={() => updateRecord(r.id, { status: "waiting", archivedAt: undefined })}
                       className="inline-flex items-center gap-1 rounded-md border border-slate-700 px-2 py-1 text-slate-300 hover:border-cyan-500/50"
                     >
                       <RotateCcw className="size-3" /> {t(lang, "restore")}

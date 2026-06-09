@@ -2,13 +2,17 @@ import { useState, type FormEvent, type ReactNode } from "react";
 import { useCRM } from "@/context/CRMProvider";
 import { ALL_BRANDS, BRAND_MODELS } from "@/lib/brandModels";
 import { t, SERVICE_TYPE_LABEL } from "@/lib/i18n";
-import type { BoilerAction, InstallationLocation, ServiceType, Status, Warranty, Task } from "@/lib/types";
+import type {
+  BoilerAction, InstallationLocation, ServiceType, Status,
+  FinalState, Warranty, Task,
+} from "@/lib/types";
 import { Plus, Save } from "lucide-react";
 
 const inputClass =
   "w-full rounded-lg border border-slate-700 bg-[#0d1a2e] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none";
 
-const STATUSES: Status[] = ["new", "inProgress", "waitingParts", "done", "cancelled"];
+const STATUSES: Status[] = ["waiting", "done", "cancelled"];
+const FINAL_STATES: FinalState[] = ["awaitingParts", "enRoute", "warrantyFollowUp"];
 const SERVICE_TYPES: ServiceType[] = ["boiler", "heating", "plumbing", "pvc", "gas", "handyman", "allWorks"];
 const BOILER_ACTIONS: BoilerAction[] = ["repair", "maintenance", "descaling", "remove", "install"];
 
@@ -22,7 +26,8 @@ export function QuickEntryForm() {
   const [serviceType, setServiceType] = useState<ServiceType>("boiler");
   const [installationLocation, setInstallationLocation] = useState<InstallationLocation>("home");
   const [boilerAction, setBoilerAction] = useState<BoilerAction>("repair");
-  const [status, setStatus] = useState<Status>("new");
+  const [status, setStatus] = useState<Status>("waiting");
+  const [finalState, setFinalState] = useState<FinalState | "">("");
   const [fault, setFault] = useState("");
   const [warranty, setWarranty] = useState<Warranty>({ status: "out" });
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -46,6 +51,7 @@ export function QuickEntryForm() {
       installationLocation,
       boilerAction: isBoiler ? boilerAction : undefined,
       status,
+      finalState: status === "waiting" ? (finalState || undefined) : undefined,
       fault: fault.trim(),
       warranty: isBoiler ? warranty : undefined,
       tasks: isBoiler ? [] : tasks,
@@ -53,7 +59,8 @@ export function QuickEntryForm() {
     });
     setClient(""); setPhone(""); setZone(""); setBrand(""); setModel(""); setFault("");
     setWarranty({ status: "out" }); setTasks([]); setTaskDraft("");
-    setStatus("new"); setServiceType("boiler"); setBoilerAction("repair"); setInstallationLocation("home");
+    setStatus("waiting"); setFinalState(""); setServiceType("boiler");
+    setBoilerAction("repair"); setInstallationLocation("home");
     setToast(t(lang, "saved"));
     setTimeout(() => setToast(null), 2200);
   }
@@ -100,6 +107,7 @@ export function QuickEntryForm() {
           <select className={inputClass} value={installationLocation} onChange={(e) => setInstallationLocation(e.target.value as InstallationLocation)}>
             <option value="home">{t(lang, "locHome")}</option>
             <option value="workshop">{t(lang, "locWorkshop")}</option>
+            <option value="projects">🏗️ {t(lang, "locProjects")}</option>
           </select>
         </Field>
 
@@ -125,6 +133,19 @@ export function QuickEntryForm() {
           <select className={inputClass} value={status} onChange={(e) => setStatus(e.target.value as Status)}>
             {STATUSES.map((s) => (
               <option key={s} value={s}>{t(lang, "st_" + s)}</option>
+            ))}
+          </select>
+        </Field>
+        <Field label={t(lang, "finalState")}>
+          <select
+            className={inputClass}
+            value={finalState}
+            onChange={(e) => setFinalState(e.target.value as FinalState | "")}
+            disabled={status !== "waiting"}
+          >
+            <option value="">{t(lang, "fs_none")}</option>
+            {FINAL_STATES.map((fs) => (
+              <option key={fs} value={fs}>{t(lang, "fs_" + fs)}</option>
             ))}
           </select>
         </Field>

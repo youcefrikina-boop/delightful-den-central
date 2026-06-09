@@ -11,7 +11,7 @@ interface Props {
   onSwitchToList: () => void;
 }
 
-const STATUSES: (Status | "all")[] = ["all", "new", "inProgress", "waitingParts", "done", "cancelled"];
+const STATUSES: (Status | "all")[] = ["all", "waiting", "done", "cancelled"];
 const SERVICE_TYPES: (ServiceType | "all")[] = ["all", "boiler", "heating", "plumbing", "pvc", "gas", "handyman", "allWorks"];
 
 export function CustomersGrid({ view, onSwitchToList }: Props) {

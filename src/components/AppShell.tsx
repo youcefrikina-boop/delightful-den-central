@@ -59,7 +59,7 @@ export function AppShell() {
   const kpis = useMemo(() => {
     const today = new Date().toDateString();
     const tasksToday = records.filter((r) => r.appointment && new Date(r.appointment).toDateString() === today).length;
-    const waiting = records.filter((r) => r.status === "new" || r.status === "waitingParts" || r.status === "inProgress").length;
+    const waiting = records.filter((r) => r.status === "waiting").length;
     return { total: records.length, tasksToday, waiting };
   }, [records]);
 

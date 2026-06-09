@@ -5,7 +5,7 @@ import { RichDuration } from "@/components/cards/RichDuration";
 import { t } from "@/lib/i18n";
 import { Radio } from "lucide-react";
 
-const STATUSES: Status[] = ["new", "inProgress", "waitingParts", "done", "cancelled"];
+const STATUSES: Status[] = ["waiting", "done", "cancelled"];
 
 export function RadarDispatcher() {
   const { records, updateRecord, technician, lang } = useCRM();
