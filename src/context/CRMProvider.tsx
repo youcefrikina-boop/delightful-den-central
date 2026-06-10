@@ -141,7 +141,13 @@ export function CRMProvider({
   const updateRecord = useCallback(
     (id: string, patch: Partial<CRMRecord>) => {
       setRecords((prev) => {
-        const next = prev.map((r) => (r.id === id ? { ...r, ...patch } : r));
+        const next = prev.map((r) => {
+          if (r.id !== id) return r;
+          const merged = { ...r, ...patch };
+          // Enforce coupling: finalState only valid when status === "waiting"
+          if (merged.status !== "waiting") merged.finalState = undefined;
+          return merged;
+        });
         const updated = next.find((r) => r.id === id);
         if (updated) void updateRecordCloud(updated).catch((e) => console.error("update failed", e));
         return next;
