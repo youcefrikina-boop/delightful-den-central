@@ -102,9 +102,11 @@ export function CRMProvider({
   const addRecord: CRMContextValue["addRecord"] = useCallback(
     (r) => {
       const visitNumber = nextVisitNumberForPhone(records, r.phone ?? "");
+      const status = r.status ?? "waiting";
       const record: CRMRecord = {
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
+        completionDate: r.completionDate,
         client: r.client,
         phone: r.phone ?? "",
         zone: r.zone ?? "",
@@ -113,14 +115,22 @@ export function CRMProvider({
         serviceType: r.serviceType ?? "boiler",
         installationLocation: r.installationLocation ?? "home",
         boilerAction: r.boilerAction,
-        status: r.status ?? "waiting",
+        status,
+        finalState: status === "waiting" ? r.finalState : undefined,
         fault: r.fault ?? "",
+        diagnosticFinal: r.diagnosticFinal,
+        assignedTech: r.assignedTech,
+        appointment: r.appointment,
+        appointmentReminded: r.appointmentReminded,
         payment: r.payment ?? {},
         warranty: r.warranty,
         tasks: r.tasks ?? [],
         visits: [],
         visitNumber,
         inDailyPlan: r.inDailyPlan ?? false,
+        gps: r.gps,
+        nextMaintenanceDate: r.nextMaintenanceDate,
+        maintenanceAlertDays: r.maintenanceAlertDays,
       };
       setRecords((prev) => [record, ...prev]);
       void insertRecord(userId, record).catch((e) => console.error("insert failed", e));
