@@ -4,9 +4,10 @@ import { ALL_BRANDS, BRAND_MODELS } from "@/lib/brandModels";
 import { t, SERVICE_TYPE_LABEL } from "@/lib/i18n";
 import type {
   BoilerAction, InstallationLocation, ServiceType, Status,
-  FinalState, Warranty, Task,
+  FinalState, Warranty, Task, Lang,
 } from "@/lib/types";
 import { Plus, Save } from "lucide-react";
+import { EditableSelect } from "@/components/EditableSelect";
 
 const inputClass =
   "w-full rounded-lg border border-slate-700 bg-[#0d1a2e] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none";
@@ -15,6 +16,18 @@ const STATUSES: Status[] = ["waiting", "done", "cancelled"];
 const FINAL_STATES: FinalState[] = ["awaitingParts", "enRoute", "warrantyFollowUp"];
 const SERVICE_TYPES: ServiceType[] = ["boiler", "heating", "plumbing", "pvc", "gas", "handyman", "allWorks"];
 const BOILER_ACTIONS: BoilerAction[] = ["repair", "maintenance", "descaling", "remove", "install"];
+
+const serviceTypeOpts = (lang: Lang) =>
+  SERVICE_TYPES.map((s) => ({ value: s, label: SERVICE_TYPE_LABEL[lang][s] }));
+const locationOpts = (lang: Lang) => [
+  { value: "home", label: t(lang, "locHome") },
+  { value: "workshop", label: t(lang, "locWorkshop") },
+  { value: "projects", label: "🏗️ " + t(lang, "locProjects") },
+];
+const statusOpts = (lang: Lang) =>
+  STATUSES.map((s) => ({ value: s, label: t(lang, "st_" + s) }));
+const finalStateOpts = (lang: Lang) =>
+  FINAL_STATES.map((fs) => ({ value: fs, label: t(lang, "fs_" + fs) }));
 
 export function QuickEntryForm() {
   const { addRecord, lang } = useCRM();
