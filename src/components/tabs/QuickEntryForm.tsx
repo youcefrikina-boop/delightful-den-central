@@ -40,7 +40,7 @@ export function QuickEntryForm() {
   const [model, setModel] = useState("");
   const [serviceType, setServiceType] = useState<ServiceType>("boiler");
   const [installationLocation, setInstallationLocation] = useState<InstallationLocation>("home");
-  const [boilerAction, setBoilerAction] = useState<BoilerAction>("repair");
+  const [boilerAction, setBoilerAction] = useState<string>("repair");
   const [status, setStatus] = useState<Status>("waiting");
   const [finalState, setFinalState] = useState<FinalState | "">("");
   const [fault, setFault] = useState("");
