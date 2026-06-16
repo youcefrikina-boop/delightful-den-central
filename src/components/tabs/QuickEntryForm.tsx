@@ -131,11 +131,12 @@ export function QuickEntryForm() {
         {isBoiler && (
           <>
             <Field label={t(lang, "boilerAction")}>
-              <select className={inputClass} value={boilerAction} onChange={(e) => setBoilerAction(e.target.value as BoilerAction)}>
-                {BOILER_ACTIONS.map((a) => (
-                  <option key={a} value={a}>{t(lang, "act" + a[0].toUpperCase() + a.slice(1))}</option>
-                ))}
-              </select>
+              <EditableSelect
+                storageKey="dafatek_opts_boilerAction"
+                baseOptions={boilerActionOpts(lang)}
+                value={boilerAction}
+                onChange={(v) => setBoilerAction(v)}
+              />
             </Field>
             <Field label={t(lang, "brand")}>
               <input list="brand-list" className={inputClass} value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Saunier Duval, Vaillant…" />
