@@ -163,11 +163,12 @@ export function DataTable() {
                       {isBoiler && (
                         <>
                           <Field label={t(lang, "boilerAction")}>
-                            <select className={inp} value={r.boilerAction ?? "repair"} onChange={(e) => updateRecord(r.id, { boilerAction: e.target.value as BoilerAction })}>
-                              {BOILER_ACTIONS.map((a) => (
-                                <option key={a} value={a}>{t(lang, "act" + a[0].toUpperCase() + a.slice(1))}</option>
-                              ))}
-                            </select>
+                            <EditableSelect
+                              storageKey="dafatek_opts_boilerAction"
+                              baseOptions={boilerActionOpts(lang)}
+                              value={r.boilerAction ?? "repair"}
+                              onChange={(v) => updateRecord(r.id, { boilerAction: v })}
+                            />
                           </Field>
                           <Field label={t(lang, "brand")}>
                             <input list={`brand-${r.id}`} className={inp} value={r.brand} onChange={(e) => updateRecord(r.id, { brand: e.target.value })} />
