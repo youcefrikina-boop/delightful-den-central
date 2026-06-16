@@ -15,7 +15,9 @@ const inputClass =
 const STATUSES: Status[] = ["waiting", "done", "cancelled"];
 const FINAL_STATES: FinalState[] = ["awaitingParts", "enRoute", "warrantyFollowUp"];
 const SERVICE_TYPES: ServiceType[] = ["boiler", "heating", "plumbing", "pvc", "gas", "handyman", "allWorks"];
-const BOILER_ACTIONS: BoilerAction[] = ["repair", "maintenance", "descaling", "remove", "install"];
+const BOILER_ACTIONS: string[] = ["repair", "maintenance", "descaling", "remove", "install"];
+const boilerActionOpts = (lang: Lang) =>
+  BOILER_ACTIONS.map((a) => ({ value: a, label: t(lang, "act" + a[0].toUpperCase() + a.slice(1)) }));
 
 const serviceTypeOpts = (lang: Lang) =>
   SERVICE_TYPES.map((s) => ({ value: s, label: SERVICE_TYPE_LABEL[lang][s] }));
