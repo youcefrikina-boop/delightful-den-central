@@ -145,24 +145,23 @@ export function QuickEntryForm() {
         )}
 
         <Field label={t(lang, "status")}>
-          <select className={inputClass} value={status} onChange={(e) => setStatus(e.target.value as Status)}>
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>{t(lang, "st_" + s)}</option>
-            ))}
-          </select>
+          <EditableSelect
+            storageKey="dafatek_opts_status"
+            baseOptions={statusOpts(lang)}
+            value={status}
+            onChange={(v) => setStatus(v as Status)}
+          />
         </Field>
         <Field label={t(lang, "finalState")}>
-          <select
-            className={inputClass}
+          <EditableSelect
+            storageKey="dafatek_opts_finalState"
+            baseOptions={finalStateOpts(lang)}
             value={finalState}
-            onChange={(e) => setFinalState(e.target.value as FinalState | "")}
+            onChange={(v) => setFinalState(v as FinalState | "")}
             disabled={status !== "waiting"}
-          >
-            <option value="">{t(lang, "fs_none")}</option>
-            {FINAL_STATES.map((fs) => (
-              <option key={fs} value={fs}>{t(lang, "fs_" + fs)}</option>
-            ))}
-          </select>
+            allowEmpty
+            emptyLabel={t(lang, "fs_none")}
+          />
         </Field>
         <Field label={t(lang, "fault")} className="sm:col-span-2">
           <textarea
