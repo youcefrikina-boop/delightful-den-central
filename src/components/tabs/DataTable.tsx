@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useCRM } from "@/context/CRMProvider";
-import type { BoilerAction, CRMRecord, FinalState, InstallationLocation, ServiceType, Status, Visit } from "@/lib/types";
+import type { CRMRecord, FinalState, InstallationLocation, ServiceType, Status, Visit } from "@/lib/types";
+import { EditableSelect } from "@/components/EditableSelect";
 import { calculateTempsAttente } from "@/lib/calculateTempsAttente";
 import { nextInnerVisitLabel } from "@/lib/visitNaming";
 import { ALL_BRANDS, BRAND_MODELS } from "@/lib/brandModels";
