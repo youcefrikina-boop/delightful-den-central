@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useCRM } from "@/context/CRMProvider";
-import type { BoilerAction, CRMRecord, FinalState, InstallationLocation, ServiceType, Status, Visit } from "@/lib/types";
+import type { CRMRecord, FinalState, InstallationLocation, ServiceType, Status, Visit } from "@/lib/types";
+import { EditableSelect } from "@/components/EditableSelect";
 import { calculateTempsAttente } from "@/lib/calculateTempsAttente";
 import { nextInnerVisitLabel } from "@/lib/visitNaming";
 import { ALL_BRANDS, BRAND_MODELS } from "@/lib/brandModels";
@@ -19,7 +20,9 @@ import { ChevronDown, ChevronRight, Trash2, Search, Hash, Pencil, Check, X } fro
 const STATUSES: Status[] = ["waiting", "done", "cancelled"];
 const FINAL_STATES: FinalState[] = ["awaitingParts", "enRoute", "warrantyFollowUp"];
 const SERVICE_TYPES: ServiceType[] = ["boiler", "heating", "plumbing", "pvc", "gas", "handyman", "allWorks"];
-const BOILER_ACTIONS: BoilerAction[] = ["repair", "maintenance", "descaling", "remove", "install"];
+const BOILER_ACTIONS: string[] = ["repair", "maintenance", "descaling", "remove", "install"];
+const boilerActionOpts = (lang: "ar" | "fr" | "en") =>
+  BOILER_ACTIONS.map((a) => ({ value: a, label: t(lang, "act" + a[0].toUpperCase() + a.slice(1)) }));
 
 const STATUS_COLOR: Record<Status, string> = {
   waiting: "bg-amber-500/20 text-amber-200 border-amber-500/40",
@@ -160,11 +163,12 @@ export function DataTable() {
                       {isBoiler && (
                         <>
                           <Field label={t(lang, "boilerAction")}>
-                            <select className={inp} value={r.boilerAction ?? "repair"} onChange={(e) => updateRecord(r.id, { boilerAction: e.target.value as BoilerAction })}>
-                              {BOILER_ACTIONS.map((a) => (
-                                <option key={a} value={a}>{t(lang, "act" + a[0].toUpperCase() + a.slice(1))}</option>
-                              ))}
-                            </select>
+                            <EditableSelect
+                              storageKey="dafatek_opts_boilerAction"
+                              baseOptions={boilerActionOpts(lang)}
+                              value={r.boilerAction ?? "repair"}
+                              onChange={(v) => updateRecord(r.id, { boilerAction: v })}
+                            />
                           </Field>
                           <Field label={t(lang, "brand")}>
                             <input list={`brand-${r.id}`} className={inp} value={r.brand} onChange={(e) => updateRecord(r.id, { brand: e.target.value })} />

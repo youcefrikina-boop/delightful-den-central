@@ -11,12 +11,7 @@ export type ServiceType =
 
 export type InstallationLocation = "home" | "workshop" | "projects";
 
-export type BoilerAction =
-  | "repair"
-  | "maintenance"
-  | "descaling"
-  | "remove"
-  | "install";
+export type BoilerAction = string;
 
 export type Status = "waiting" | "done" | "cancelled";
 export type FinalState = "awaitingParts" | "enRoute" | "warrantyFollowUp";

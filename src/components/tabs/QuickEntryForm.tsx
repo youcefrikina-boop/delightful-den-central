@@ -3,7 +3,7 @@ import { useCRM } from "@/context/CRMProvider";
 import { ALL_BRANDS, BRAND_MODELS } from "@/lib/brandModels";
 import { t, SERVICE_TYPE_LABEL } from "@/lib/i18n";
 import type {
-  BoilerAction, InstallationLocation, ServiceType, Status,
+  InstallationLocation, ServiceType, Status,
   FinalState, Warranty, Task, Lang,
 } from "@/lib/types";
 import { Plus, Save } from "lucide-react";
@@ -15,7 +15,9 @@ const inputClass =
 const STATUSES: Status[] = ["waiting", "done", "cancelled"];
 const FINAL_STATES: FinalState[] = ["awaitingParts", "enRoute", "warrantyFollowUp"];
 const SERVICE_TYPES: ServiceType[] = ["boiler", "heating", "plumbing", "pvc", "gas", "handyman", "allWorks"];
-const BOILER_ACTIONS: BoilerAction[] = ["repair", "maintenance", "descaling", "remove", "install"];
+const BOILER_ACTIONS: string[] = ["repair", "maintenance", "descaling", "remove", "install"];
+const boilerActionOpts = (lang: Lang) =>
+  BOILER_ACTIONS.map((a) => ({ value: a, label: t(lang, "act" + a[0].toUpperCase() + a.slice(1)) }));
 
 const serviceTypeOpts = (lang: Lang) =>
   SERVICE_TYPES.map((s) => ({ value: s, label: SERVICE_TYPE_LABEL[lang][s] }));
@@ -38,7 +40,7 @@ export function QuickEntryForm() {
   const [model, setModel] = useState("");
   const [serviceType, setServiceType] = useState<ServiceType>("boiler");
   const [installationLocation, setInstallationLocation] = useState<InstallationLocation>("home");
-  const [boilerAction, setBoilerAction] = useState<BoilerAction>("repair");
+  const [boilerAction, setBoilerAction] = useState<string>("repair");
   const [status, setStatus] = useState<Status>("waiting");
   const [finalState, setFinalState] = useState<FinalState | "">("");
   const [fault, setFault] = useState("");
@@ -129,11 +131,12 @@ export function QuickEntryForm() {
         {isBoiler && (
           <>
             <Field label={t(lang, "boilerAction")}>
-              <select className={inputClass} value={boilerAction} onChange={(e) => setBoilerAction(e.target.value as BoilerAction)}>
-                {BOILER_ACTIONS.map((a) => (
-                  <option key={a} value={a}>{t(lang, "act" + a[0].toUpperCase() + a.slice(1))}</option>
-                ))}
-              </select>
+              <EditableSelect
+                storageKey="dafatek_opts_boilerAction"
+                baseOptions={boilerActionOpts(lang)}
+                value={boilerAction}
+                onChange={(v) => setBoilerAction(v)}
+              />
             </Field>
             <Field label={t(lang, "brand")}>
               <input list="brand-list" className={inputClass} value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Saunier Duval, Vaillant…" />
