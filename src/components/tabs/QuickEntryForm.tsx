@@ -110,18 +110,20 @@ export function QuickEntryForm() {
         </Field>
 
         <Field label={t(lang, "serviceType")}>
-          <select className={inputClass} value={serviceType} onChange={(e) => setServiceType(e.target.value as ServiceType)}>
-            {SERVICE_TYPES.map((s) => (
-              <option key={s} value={s}>{SERVICE_TYPE_LABEL[lang][s]}</option>
-            ))}
-          </select>
+          <EditableSelect
+            storageKey="dafatek_opts_serviceType"
+            baseOptions={serviceTypeOpts(lang)}
+            value={serviceType}
+            onChange={(v) => setServiceType(v as ServiceType)}
+          />
         </Field>
         <Field label={t(lang, "location")}>
-          <select className={inputClass} value={installationLocation} onChange={(e) => setInstallationLocation(e.target.value as InstallationLocation)}>
-            <option value="home">{t(lang, "locHome")}</option>
-            <option value="workshop">{t(lang, "locWorkshop")}</option>
-            <option value="projects">🏗️ {t(lang, "locProjects")}</option>
-          </select>
+          <EditableSelect
+            storageKey="dafatek_opts_location"
+            baseOptions={locationOpts(lang)}
+            value={installationLocation}
+            onChange={(v) => setInstallationLocation(v as InstallationLocation)}
+          />
         </Field>
 
         {isBoiler && (
