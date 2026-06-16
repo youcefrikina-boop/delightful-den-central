@@ -4,9 +4,10 @@ import { ALL_BRANDS, BRAND_MODELS } from "@/lib/brandModels";
 import { t, SERVICE_TYPE_LABEL } from "@/lib/i18n";
 import type {
   BoilerAction, InstallationLocation, ServiceType, Status,
-  FinalState, Warranty, Task,
+  FinalState, Warranty, Task, Lang,
 } from "@/lib/types";
 import { Plus, Save } from "lucide-react";
+import { EditableSelect } from "@/components/EditableSelect";
 
 const inputClass =
   "w-full rounded-lg border border-slate-700 bg-[#0d1a2e] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none";
@@ -15,6 +16,18 @@ const STATUSES: Status[] = ["waiting", "done", "cancelled"];
 const FINAL_STATES: FinalState[] = ["awaitingParts", "enRoute", "warrantyFollowUp"];
 const SERVICE_TYPES: ServiceType[] = ["boiler", "heating", "plumbing", "pvc", "gas", "handyman", "allWorks"];
 const BOILER_ACTIONS: BoilerAction[] = ["repair", "maintenance", "descaling", "remove", "install"];
+
+const serviceTypeOpts = (lang: Lang) =>
+  SERVICE_TYPES.map((s) => ({ value: s, label: SERVICE_TYPE_LABEL[lang][s] }));
+const locationOpts = (lang: Lang) => [
+  { value: "home", label: t(lang, "locHome") },
+  { value: "workshop", label: t(lang, "locWorkshop") },
+  { value: "projects", label: "🏗️ " + t(lang, "locProjects") },
+];
+const statusOpts = (lang: Lang) =>
+  STATUSES.map((s) => ({ value: s, label: t(lang, "st_" + s) }));
+const finalStateOpts = (lang: Lang) =>
+  FINAL_STATES.map((fs) => ({ value: fs, label: t(lang, "fs_" + fs) }));
 
 export function QuickEntryForm() {
   const { addRecord, lang } = useCRM();
@@ -97,18 +110,20 @@ export function QuickEntryForm() {
         </Field>
 
         <Field label={t(lang, "serviceType")}>
-          <select className={inputClass} value={serviceType} onChange={(e) => setServiceType(e.target.value as ServiceType)}>
-            {SERVICE_TYPES.map((s) => (
-              <option key={s} value={s}>{SERVICE_TYPE_LABEL[lang][s]}</option>
-            ))}
-          </select>
+          <EditableSelect
+            storageKey="dafatek_opts_serviceType"
+            baseOptions={serviceTypeOpts(lang)}
+            value={serviceType}
+            onChange={(v) => setServiceType(v as ServiceType)}
+          />
         </Field>
         <Field label={t(lang, "location")}>
-          <select className={inputClass} value={installationLocation} onChange={(e) => setInstallationLocation(e.target.value as InstallationLocation)}>
-            <option value="home">{t(lang, "locHome")}</option>
-            <option value="workshop">{t(lang, "locWorkshop")}</option>
-            <option value="projects">🏗️ {t(lang, "locProjects")}</option>
-          </select>
+          <EditableSelect
+            storageKey="dafatek_opts_location"
+            baseOptions={locationOpts(lang)}
+            value={installationLocation}
+            onChange={(v) => setInstallationLocation(v as InstallationLocation)}
+          />
         </Field>
 
         {isBoiler && (
@@ -130,24 +145,23 @@ export function QuickEntryForm() {
         )}
 
         <Field label={t(lang, "status")}>
-          <select className={inputClass} value={status} onChange={(e) => setStatus(e.target.value as Status)}>
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>{t(lang, "st_" + s)}</option>
-            ))}
-          </select>
+          <EditableSelect
+            storageKey="dafatek_opts_status"
+            baseOptions={statusOpts(lang)}
+            value={status}
+            onChange={(v) => setStatus(v as Status)}
+          />
         </Field>
         <Field label={t(lang, "finalState")}>
-          <select
-            className={inputClass}
+          <EditableSelect
+            storageKey="dafatek_opts_finalState"
+            baseOptions={finalStateOpts(lang)}
             value={finalState}
-            onChange={(e) => setFinalState(e.target.value as FinalState | "")}
+            onChange={(v) => setFinalState(v as FinalState | "")}
             disabled={status !== "waiting"}
-          >
-            <option value="">{t(lang, "fs_none")}</option>
-            {FINAL_STATES.map((fs) => (
-              <option key={fs} value={fs}>{t(lang, "fs_" + fs)}</option>
-            ))}
-          </select>
+            allowEmpty
+            emptyLabel={t(lang, "fs_none")}
+          />
         </Field>
         <Field label={t(lang, "fault")} className="sm:col-span-2">
           <textarea
