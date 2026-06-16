@@ -3,7 +3,7 @@ import { useCRM } from "@/context/CRMProvider";
 import { ALL_BRANDS, BRAND_MODELS } from "@/lib/brandModels";
 import { t, SERVICE_TYPE_LABEL } from "@/lib/i18n";
 import type {
-  BoilerAction, InstallationLocation, ServiceType, Status,
+  InstallationLocation, ServiceType, Status,
   FinalState, Warranty, Task, Lang,
 } from "@/lib/types";
 import { Plus, Save } from "lucide-react";
