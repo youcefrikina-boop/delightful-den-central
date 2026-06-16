@@ -20,7 +20,9 @@ import { ChevronDown, ChevronRight, Trash2, Search, Hash, Pencil, Check, X } fro
 const STATUSES: Status[] = ["waiting", "done", "cancelled"];
 const FINAL_STATES: FinalState[] = ["awaitingParts", "enRoute", "warrantyFollowUp"];
 const SERVICE_TYPES: ServiceType[] = ["boiler", "heating", "plumbing", "pvc", "gas", "handyman", "allWorks"];
-const BOILER_ACTIONS: BoilerAction[] = ["repair", "maintenance", "descaling", "remove", "install"];
+const BOILER_ACTIONS: string[] = ["repair", "maintenance", "descaling", "remove", "install"];
+const boilerActionOpts = (lang: "ar" | "fr" | "en") =>
+  BOILER_ACTIONS.map((a) => ({ value: a, label: t(lang, "act" + a[0].toUpperCase() + a.slice(1)) }));
 
 const STATUS_COLOR: Record<Status, string> = {
   waiting: "bg-amber-500/20 text-amber-200 border-amber-500/40",
