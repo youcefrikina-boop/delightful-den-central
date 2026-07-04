@@ -10,15 +10,17 @@ import { Statistics } from "@/components/tabs/Statistics";
 import { Accounting } from "@/components/tabs/Accounting";
 import { RadarDispatcher } from "@/components/tabs/RadarDispatcher";
 import { ArchivesTimeline } from "@/components/tabs/ArchivesTimeline";
+import { KanbanBoard } from "@/components/tabs/KanbanBoard";
 import {
   Wrench, Users, TrendingUp, Clock, Plus, LayoutGrid, List,
   Globe, ChevronDown, UserCircle2, Settings, LogOut, Check,
 } from "lucide-react";
 
-type TabKey = "clients" | "schedule" | "radar" | "archives" | "faults" | "stats" | "accounting";
+type TabKey = "clients" | "kanban" | "schedule" | "radar" | "archives" | "faults" | "stats" | "accounting";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "clients", label: "clientManagement" },
+  { key: "kanban", label: "لوحة المهام" },
   { key: "schedule", label: "tab_schedule" },
   { key: "radar", label: "tab_radar" },
   { key: "archives", label: "tab_archives" },
