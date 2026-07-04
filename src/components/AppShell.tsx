@@ -10,15 +10,17 @@ import { Statistics } from "@/components/tabs/Statistics";
 import { Accounting } from "@/components/tabs/Accounting";
 import { RadarDispatcher } from "@/components/tabs/RadarDispatcher";
 import { ArchivesTimeline } from "@/components/tabs/ArchivesTimeline";
+import { KanbanBoard } from "@/components/tabs/KanbanBoard";
 import {
   Wrench, Users, TrendingUp, Clock, Plus, LayoutGrid, List,
   Globe, ChevronDown, UserCircle2, Settings, LogOut, Check,
 } from "lucide-react";
 
-type TabKey = "clients" | "schedule" | "radar" | "archives" | "faults" | "stats" | "accounting";
+type TabKey = "clients" | "kanban" | "schedule" | "radar" | "archives" | "faults" | "stats" | "accounting";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "clients", label: "clientManagement" },
+  { key: "kanban", label: "لوحة المهام" },
   { key: "schedule", label: "tab_schedule" },
   { key: "radar", label: "tab_radar" },
   { key: "archives", label: "tab_archives" },
@@ -186,7 +188,7 @@ export function AppShell() {
                   onClick={() => setTab(tDef.key)}
                   className={`relative whitespace-nowrap px-4 py-3 text-xs font-medium transition ${active ? "text-cyan-300" : "text-slate-400 hover:text-slate-200"}`}
                 >
-                  {t(lang, tDef.label)}
+                  {tDef.key === "kanban" ? tDef.label : t(lang, tDef.label)}
                   {active && <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.7)]" />}
                 </button>
               );
@@ -207,6 +209,7 @@ export function AppShell() {
         )}
 
         {tab === "clients" && <CustomersGrid view={view} onSwitchToList={() => setView("list")} />}
+        {tab === "kanban" && <KanbanBoard />}
         {tab === "schedule" && <DailySchedule />}
         {tab === "radar" && <RadarDispatcher />}
         {tab === "archives" && <ArchivesTimeline />}
