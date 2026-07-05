@@ -20,7 +20,7 @@ type TabKey = "clients" | "kanban" | "schedule" | "radar" | "archives" | "faults
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "clients", label: "clientManagement" },
-  { key: "kanban", label: "لوحة المهام" },
+  { key: "kanban", label: "tab_kanban" },
   { key: "schedule", label: "tab_schedule" },
   { key: "radar", label: "tab_radar" },
   { key: "archives", label: "tab_archives" },
@@ -188,7 +188,7 @@ export function AppShell() {
                   onClick={() => setTab(tDef.key)}
                   className={`relative whitespace-nowrap px-4 py-3 text-xs font-medium transition ${active ? "text-cyan-300" : "text-slate-400 hover:text-slate-200"}`}
                 >
-                  {tDef.key === "kanban" ? tDef.label : t(lang, tDef.label)}
+                  {t(lang, tDef.label)}
                   {active && <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.7)]" />}
                 </button>
               );

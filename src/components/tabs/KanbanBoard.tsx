@@ -2,28 +2,29 @@ import { useMemo, useState } from "react";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import { useCRM } from "@/context/CRMProvider";
 import { QuickEntryForm } from "@/components/tabs/QuickEntryForm";
-import type { CRMRecord, Status, FinalState } from "@/lib/types";
+import type { CRMRecord, Status, FinalState, Lang } from "@/lib/types";
+import { t } from "@/lib/i18n";
 import { Plus, Calendar, Phone, MapPin, X } from "lucide-react";
 
 type Frame = "day" | "week" | "month";
 type ColumnKey = "waiting" | "enRoute" | "awaitingParts" | "done";
 
-const COLUMNS: { key: ColumnKey; title: string; tint: string; accent: string }[] = [
-  { key: "waiting",       title: "في الانتظار",       tint: "bg-amber-500/5   border-amber-500/20",   accent: "text-amber-300" },
-  { key: "enRoute",       title: "قيد التنفيذ / تشخيص", tint: "bg-sky-500/5     border-sky-500/20",     accent: "text-sky-300" },
-  { key: "awaitingParts", title: "بانتظار قطع الغيار",  tint: "bg-violet-500/5  border-violet-500/20",  accent: "text-violet-300" },
-  { key: "done",          title: "مكتمل",              tint: "bg-emerald-500/5 border-emerald-500/20", accent: "text-emerald-300" },
+const COLUMNS: { key: ColumnKey; titleKey: string; tint: string; accent: string }[] = [
+  { key: "waiting",       titleKey: "kb_colWaiting",       tint: "bg-amber-500/5   border-amber-500/20",   accent: "text-amber-300" },
+  { key: "enRoute",       titleKey: "kb_colEnRoute",       tint: "bg-sky-500/5     border-sky-500/20",     accent: "text-sky-300" },
+  { key: "awaitingParts", titleKey: "kb_colAwaitingParts", tint: "bg-violet-500/5  border-violet-500/20",  accent: "text-violet-300" },
+  { key: "done",          titleKey: "kb_colDone",          tint: "bg-emerald-500/5 border-emerald-500/20", accent: "text-emerald-300" },
 ];
 
-function priorityOf(r: CRMRecord): { label: string; cls: string; rank: 0 | 1 | 2 } {
+function priorityOf(r: CRMRecord, lang: Lang): { label: string; cls: string; rank: 0 | 1 | 2 } {
   const now = Date.now();
   if (r.appointment) {
     const diffH = (new Date(r.appointment).getTime() - now) / 36e5;
-    if (diffH <= 24) return { label: "عالية", cls: "bg-rose-500/15 text-rose-300 border-rose-500/30", rank: 0 };
-    if (diffH <= 72) return { label: "متوسطة", cls: "bg-amber-500/15 text-amber-300 border-amber-500/30", rank: 1 };
+    if (diffH <= 24) return { label: t(lang, "kb_prHigh"), cls: "bg-rose-500/15 text-rose-300 border-rose-500/30", rank: 0 };
+    if (diffH <= 72) return { label: t(lang, "kb_prMedium"), cls: "bg-amber-500/15 text-amber-300 border-amber-500/30", rank: 1 };
   }
-  if (r.warranty?.status === "under") return { label: "متوسطة", cls: "bg-amber-500/15 text-amber-300 border-amber-500/30", rank: 1 };
-  return { label: "منخفضة", cls: "bg-slate-500/15 text-slate-300 border-slate-500/30", rank: 2 };
+  if (r.warranty?.status === "under") return { label: t(lang, "kb_prMedium"), cls: "bg-amber-500/15 text-amber-300 border-amber-500/30", rank: 1 };
+  return { label: t(lang, "kb_prLow"), cls: "bg-slate-500/15 text-slate-300 border-slate-500/30", rank: 2 };
 }
 
 function columnOf(r: CRMRecord): ColumnKey {
@@ -45,7 +46,7 @@ function inFrame(r: CRMRecord, frame: Frame): boolean {
 }
 
 export function KanbanBoard() {
-  const { records, updateRecord } = useCRM();
+  const { records, updateRecord, lang } = useCRM();
   const [frame, setFrame] = useState<Frame>("week");
   const [showAdd, setShowAdd] = useState(false);
   const [active, setActive] = useState<CRMRecord | null>(null);
@@ -57,10 +58,10 @@ export function KanbanBoard() {
       map[columnOf(r)].push(r);
     }
     for (const k of Object.keys(map) as ColumnKey[]) {
-      map[k].sort((a, b) => priorityOf(a).rank - priorityOf(b).rank);
+      map[k].sort((a, b) => priorityOf(a, lang).rank - priorityOf(b, lang).rank);
     }
     return map;
-  }, [records, frame]);
+  }, [records, frame, lang]);
 
   const onDragEnd = (res: DropResult) => {
     if (!res.destination) return;
@@ -86,7 +87,7 @@ export function KanbanBoard() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="inline-flex overflow-hidden rounded-lg border border-slate-700 bg-[#0a1428]">
           {(["day", "week", "month"] as Frame[]).map((f) => {
-            const label = f === "day" ? "اليوم" : f === "week" ? "الأسبوع" : "الشهر";
+            const label = f === "day" ? t(lang, "kb_day") : f === "week" ? t(lang, "kb_week") : t(lang, "kb_month");
             const active = frame === f;
             return (
               <button
@@ -106,14 +107,14 @@ export function KanbanBoard() {
           onClick={() => setShowAdd((v) => !v)}
           className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-400 to-cyan-500 px-3 py-2 text-xs font-semibold text-slate-950 shadow-[0_0_18px_rgba(34,211,238,0.45)] hover:from-cyan-300 hover:to-cyan-400"
         >
-          <Plus className="size-3.5" /> إضافة عميل سريع
+          <Plus className="size-3.5" /> {t(lang, "kb_quickAdd")}
         </button>
       </div>
 
       {showAdd && (
         <div className="rounded-xl border border-cyan-500/30 bg-[#0a1428] p-4">
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-cyan-300">إدخال سريع</h3>
+            <h3 className="text-sm font-semibold text-cyan-300">{t(lang, "kb_quickEntry")}</h3>
             <button onClick={() => setShowAdd(false)} className="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-400 hover:text-slate-200">
               ✕
             </button>
@@ -136,14 +137,14 @@ export function KanbanBoard() {
                   }`}
                 >
                   <div className="mb-3 flex items-center justify-between">
-                    <h3 className={`text-sm font-bold ${col.accent}`}>{col.title}</h3>
+                    <h3 className={`text-sm font-bold ${col.accent}`}>{t(lang, col.titleKey)}</h3>
                     <span className="rounded-full border border-slate-700 bg-[#0d162d]/80 px-2 py-0.5 text-[10px] text-slate-300">
                       {grouped[col.key].length}
                     </span>
                   </div>
                   <div className="space-y-2 min-h-[120px]">
                     {grouped[col.key].map((r, idx) => {
-                      const pr = priorityOf(r);
+                      const pr = priorityOf(r, lang);
                       return (
                         <Draggable draggableId={r.id} index={idx} key={r.id}>
                           {(dp, ds) => (
@@ -190,7 +191,7 @@ export function KanbanBoard() {
                     {provided.placeholder}
                     {grouped[col.key].length === 0 && (
                       <div className="grid h-24 place-items-center rounded-lg border border-dashed border-slate-700/60 text-[11px] text-slate-500">
-                        اسحب البطاقات هنا
+                        {t(lang, "kb_dropHere")}
                       </div>
                     )}
                   </div>
@@ -211,7 +212,7 @@ export function KanbanBoard() {
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-base font-bold text-cyan-300">{active.client}</h3>
-                <div className="text-[11px] text-slate-400">تفاصيل المتابعة الفنية</div>
+                <div className="text-[11px] text-slate-400">{t(lang, "kb_detailsTitle")}</div>
               </div>
               <button onClick={() => setActive(null)} className="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-400 hover:text-slate-200">
                 <X className="size-3.5" />
@@ -222,7 +223,7 @@ export function KanbanBoard() {
               <Info label="الهاتف" value={active.phone} icon={<Phone className="size-3" />} />
               <Info label="المنطقة" value={active.zone} icon={<MapPin className="size-3" />} />
               <Info label="نوع الخدمة" value={active.serviceType} />
-              <Info label="المكان" value={active.installationLocation} />
+              <Info label={t(lang, "kb_placeLabel")} value={active.installationLocation} />
               <Info label="الماركة" value={active.brand} />
               <Info label="الموديل" value={active.model} />
               <Info label="الموعد" value={active.appointment ? new Date(active.appointment).toLocaleString("ar") : "—"} />
@@ -233,7 +234,7 @@ export function KanbanBoard() {
 
             {active.fault && (
               <div className="mt-3 rounded-lg border border-slate-700 bg-[#060d1f] p-3">
-                <div className="mb-1 text-[10px] uppercase text-slate-500">العطل / الوصف</div>
+                <div className="mb-1 text-[10px] uppercase text-slate-500">{t(lang, "kb_faultDesc")}</div>
                 <div className="text-xs text-slate-200">{active.fault}</div>
               </div>
             )}
@@ -249,7 +250,7 @@ export function KanbanBoard() {
                 onClick={() => setActive(null)}
                 className="rounded-md bg-cyan-500 px-4 py-1.5 text-xs font-semibold text-slate-950 hover:bg-cyan-400"
               >
-                إغلاق
+                {t(lang, "kb_close")}
               </button>
             </div>
           </div>
