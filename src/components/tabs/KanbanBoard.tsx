@@ -2,28 +2,29 @@ import { useMemo, useState } from "react";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import { useCRM } from "@/context/CRMProvider";
 import { QuickEntryForm } from "@/components/tabs/QuickEntryForm";
-import type { CRMRecord, Status, FinalState } from "@/lib/types";
+import type { CRMRecord, Status, FinalState, Lang } from "@/lib/types";
+import { t } from "@/lib/i18n";
 import { Plus, Calendar, Phone, MapPin, X } from "lucide-react";
 
 type Frame = "day" | "week" | "month";
 type ColumnKey = "waiting" | "enRoute" | "awaitingParts" | "done";
 
-const COLUMNS: { key: ColumnKey; title: string; tint: string; accent: string }[] = [
-  { key: "waiting",       title: "في الانتظار",       tint: "bg-amber-500/5   border-amber-500/20",   accent: "text-amber-300" },
-  { key: "enRoute",       title: "قيد التنفيذ / تشخيص", tint: "bg-sky-500/5     border-sky-500/20",     accent: "text-sky-300" },
-  { key: "awaitingParts", title: "بانتظار قطع الغيار",  tint: "bg-violet-500/5  border-violet-500/20",  accent: "text-violet-300" },
-  { key: "done",          title: "مكتمل",              tint: "bg-emerald-500/5 border-emerald-500/20", accent: "text-emerald-300" },
+const COLUMNS: { key: ColumnKey; titleKey: string; tint: string; accent: string }[] = [
+  { key: "waiting",       titleKey: "kb_colWaiting",       tint: "bg-amber-500/5   border-amber-500/20",   accent: "text-amber-300" },
+  { key: "enRoute",       titleKey: "kb_colEnRoute",       tint: "bg-sky-500/5     border-sky-500/20",     accent: "text-sky-300" },
+  { key: "awaitingParts", titleKey: "kb_colAwaitingParts", tint: "bg-violet-500/5  border-violet-500/20",  accent: "text-violet-300" },
+  { key: "done",          titleKey: "kb_colDone",          tint: "bg-emerald-500/5 border-emerald-500/20", accent: "text-emerald-300" },
 ];
 
-function priorityOf(r: CRMRecord): { label: string; cls: string; rank: 0 | 1 | 2 } {
+function priorityOf(r: CRMRecord, lang: Lang): { label: string; cls: string; rank: 0 | 1 | 2 } {
   const now = Date.now();
   if (r.appointment) {
     const diffH = (new Date(r.appointment).getTime() - now) / 36e5;
-    if (diffH <= 24) return { label: "عالية", cls: "bg-rose-500/15 text-rose-300 border-rose-500/30", rank: 0 };
-    if (diffH <= 72) return { label: "متوسطة", cls: "bg-amber-500/15 text-amber-300 border-amber-500/30", rank: 1 };
+    if (diffH <= 24) return { label: t(lang, "kb_prHigh"), cls: "bg-rose-500/15 text-rose-300 border-rose-500/30", rank: 0 };
+    if (diffH <= 72) return { label: t(lang, "kb_prMedium"), cls: "bg-amber-500/15 text-amber-300 border-amber-500/30", rank: 1 };
   }
-  if (r.warranty?.status === "under") return { label: "متوسطة", cls: "bg-amber-500/15 text-amber-300 border-amber-500/30", rank: 1 };
-  return { label: "منخفضة", cls: "bg-slate-500/15 text-slate-300 border-slate-500/30", rank: 2 };
+  if (r.warranty?.status === "under") return { label: t(lang, "kb_prMedium"), cls: "bg-amber-500/15 text-amber-300 border-amber-500/30", rank: 1 };
+  return { label: t(lang, "kb_prLow"), cls: "bg-slate-500/15 text-slate-300 border-slate-500/30", rank: 2 };
 }
 
 function columnOf(r: CRMRecord): ColumnKey {
