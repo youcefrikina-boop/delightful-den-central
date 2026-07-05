@@ -107,14 +107,14 @@ export function KanbanBoard() {
           onClick={() => setShowAdd((v) => !v)}
           className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-400 to-cyan-500 px-3 py-2 text-xs font-semibold text-slate-950 shadow-[0_0_18px_rgba(34,211,238,0.45)] hover:from-cyan-300 hover:to-cyan-400"
         >
-          <Plus className="size-3.5" /> إضافة عميل سريع
+          <Plus className="size-3.5" /> {t(lang, "kb_quickAdd")}
         </button>
       </div>
 
       {showAdd && (
         <div className="rounded-xl border border-cyan-500/30 bg-[#0a1428] p-4">
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-cyan-300">إدخال سريع</h3>
+            <h3 className="text-sm font-semibold text-cyan-300">{t(lang, "kb_quickEntry")}</h3>
             <button onClick={() => setShowAdd(false)} className="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-400 hover:text-slate-200">
               ✕
             </button>
@@ -137,14 +137,14 @@ export function KanbanBoard() {
                   }`}
                 >
                   <div className="mb-3 flex items-center justify-between">
-                    <h3 className={`text-sm font-bold ${col.accent}`}>{col.title}</h3>
+                    <h3 className={`text-sm font-bold ${col.accent}`}>{t(lang, col.titleKey)}</h3>
                     <span className="rounded-full border border-slate-700 bg-[#0d162d]/80 px-2 py-0.5 text-[10px] text-slate-300">
                       {grouped[col.key].length}
                     </span>
                   </div>
                   <div className="space-y-2 min-h-[120px]">
                     {grouped[col.key].map((r, idx) => {
-                      const pr = priorityOf(r);
+                      const pr = priorityOf(r, lang);
                       return (
                         <Draggable draggableId={r.id} index={idx} key={r.id}>
                           {(dp, ds) => (
@@ -191,7 +191,7 @@ export function KanbanBoard() {
                     {provided.placeholder}
                     {grouped[col.key].length === 0 && (
                       <div className="grid h-24 place-items-center rounded-lg border border-dashed border-slate-700/60 text-[11px] text-slate-500">
-                        اسحب البطاقات هنا
+                        {t(lang, "kb_dropHere")}
                       </div>
                     )}
                   </div>
@@ -212,7 +212,7 @@ export function KanbanBoard() {
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-base font-bold text-cyan-300">{active.client}</h3>
-                <div className="text-[11px] text-slate-400">تفاصيل المتابعة الفنية</div>
+                <div className="text-[11px] text-slate-400">{t(lang, "kb_detailsTitle")}</div>
               </div>
               <button onClick={() => setActive(null)} className="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-400 hover:text-slate-200">
                 <X className="size-3.5" />
@@ -223,7 +223,7 @@ export function KanbanBoard() {
               <Info label="الهاتف" value={active.phone} icon={<Phone className="size-3" />} />
               <Info label="المنطقة" value={active.zone} icon={<MapPin className="size-3" />} />
               <Info label="نوع الخدمة" value={active.serviceType} />
-              <Info label="المكان" value={active.installationLocation} />
+              <Info label={t(lang, "kb_placeLabel")} value={active.installationLocation} />
               <Info label="الماركة" value={active.brand} />
               <Info label="الموديل" value={active.model} />
               <Info label="الموعد" value={active.appointment ? new Date(active.appointment).toLocaleString("ar") : "—"} />
@@ -234,7 +234,7 @@ export function KanbanBoard() {
 
             {active.fault && (
               <div className="mt-3 rounded-lg border border-slate-700 bg-[#060d1f] p-3">
-                <div className="mb-1 text-[10px] uppercase text-slate-500">العطل / الوصف</div>
+                <div className="mb-1 text-[10px] uppercase text-slate-500">{t(lang, "kb_faultDesc")}</div>
                 <div className="text-xs text-slate-200">{active.fault}</div>
               </div>
             )}
@@ -250,7 +250,7 @@ export function KanbanBoard() {
                 onClick={() => setActive(null)}
                 className="rounded-md bg-cyan-500 px-4 py-1.5 text-xs font-semibold text-slate-950 hover:bg-cyan-400"
               >
-                إغلاق
+                {t(lang, "kb_close")}
               </button>
             </div>
           </div>
