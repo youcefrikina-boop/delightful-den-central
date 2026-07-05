@@ -87,7 +87,7 @@ export function KanbanBoard() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="inline-flex overflow-hidden rounded-lg border border-slate-700 bg-[#0a1428]">
           {(["day", "week", "month"] as Frame[]).map((f) => {
-            const label = f === "day" ? "اليوم" : f === "week" ? "الأسبوع" : "الشهر";
+            const label = f === "day" ? t(lang, "kb_day") : f === "week" ? t(lang, "kb_week") : t(lang, "kb_month");
             const active = frame === f;
             return (
               <button
