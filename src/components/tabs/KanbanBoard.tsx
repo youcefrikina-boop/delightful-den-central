@@ -46,7 +46,7 @@ function inFrame(r: CRMRecord, frame: Frame): boolean {
 }
 
 export function KanbanBoard() {
-  const { records, updateRecord } = useCRM();
+  const { records, updateRecord, lang } = useCRM();
   const [frame, setFrame] = useState<Frame>("week");
   const [showAdd, setShowAdd] = useState(false);
   const [active, setActive] = useState<CRMRecord | null>(null);
@@ -58,10 +58,10 @@ export function KanbanBoard() {
       map[columnOf(r)].push(r);
     }
     for (const k of Object.keys(map) as ColumnKey[]) {
-      map[k].sort((a, b) => priorityOf(a).rank - priorityOf(b).rank);
+      map[k].sort((a, b) => priorityOf(a, lang).rank - priorityOf(b, lang).rank);
     }
     return map;
-  }, [records, frame]);
+  }, [records, frame, lang]);
 
   const onDragEnd = (res: DropResult) => {
     if (!res.destination) return;
