@@ -20,7 +20,7 @@ type TabKey = "clients" | "kanban" | "schedule" | "radar" | "archives" | "faults
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "clients", label: "clientManagement" },
-  { key: "kanban", label: "لوحة المهام" },
+  { key: "kanban", label: "tab_kanban" },
   { key: "schedule", label: "tab_schedule" },
   { key: "radar", label: "tab_radar" },
   { key: "archives", label: "tab_archives" },
