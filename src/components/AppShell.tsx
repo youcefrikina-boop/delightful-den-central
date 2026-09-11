@@ -208,7 +208,7 @@ export function AppShell() {
           </div>
         )}
 
-        {tab === "clients" && <CustomersGrid view={view} onSwitchToList={() => setView("list")} />}
+        {tab === "clients" && <CustomersGrid view={view} />}
         {tab === "kanban" && <KanbanBoard />}
         {tab === "schedule" && <DailySchedule />}
         {tab === "radar" && <RadarDispatcher />}
