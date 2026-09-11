@@ -3,22 +3,24 @@ import { useCRM } from "@/context/CRMProvider";
 import { t, SERVICE_TYPE_LABEL } from "@/lib/i18n";
 import type { ServiceType, Status } from "@/lib/types";
 import { CustomerCard } from "@/components/cards/CustomerCard";
+import { CustomerEditModal } from "@/components/cards/CustomerEditModal";
 import { DataTable } from "@/components/tabs/DataTable";
 import { Search, Globe, Zap, Wrench } from "lucide-react";
+import type { CRMRecord } from "@/lib/types";
 
 interface Props {
   view: "grid" | "list";
-  onSwitchToList: () => void;
 }
 
 const STATUSES: (Status | "all")[] = ["all", "waiting", "done", "cancelled"];
 const SERVICE_TYPES: (ServiceType | "all")[] = ["all", "boiler", "heating", "plumbing", "pvc", "gas", "handyman", "allWorks"];
 
-export function CustomersGrid({ view, onSwitchToList }: Props) {
+export function CustomersGrid({ view }: Props) {
   const { records, lang, deleteRecord } = useCRM();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<Status | "all">("all");
   const [serviceFilter, setServiceFilter] = useState<ServiceType | "all">("all");
+  const [editingRecord, setEditingRecord] = useState<CRMRecord | null>(null);
 
   const filtered = useMemo(() => {
     return records.filter((r) => {
@@ -97,14 +99,21 @@ export function CustomersGrid({ view, onSwitchToList }: Props) {
               key={r.id}
               record={r}
               lang={lang}
-              onEdit={onSwitchToList}
-              onShowDetails={onSwitchToList}
+              onEdit={() => setEditingRecord(r)}
+              onShowDetails={() => setEditingRecord(r)}
               onDelete={() => {
                 if (confirm(`${t(lang, "delete")} — ${r.client}?`)) deleteRecord(r.id);
               }}
             />
           ))}
         </div>
+      )}
+
+      {editingRecord && (
+        <CustomerEditModal
+          record={editingRecord}
+          onClose={() => setEditingRecord(null)}
+        />
       )}
     </div>
   );
