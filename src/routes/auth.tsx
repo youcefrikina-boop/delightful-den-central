@@ -11,6 +11,10 @@ export const Route = createFileRoute("/auth")({
     meta: [
       { title: "تسجيل الدخول — DafaTek CRM" },
       { name: "description", content: "تسجيل الدخول إلى نظام إدارة ورشة صيانة المراجل DafaTek CRM." },
+      { property: "og:title", content: "تسجيل الدخول — DafaTek CRM" },
+      { property: "og:description", content: "تسجيل الدخول إلى نظام إدارة ورشة صيانة المراجل DafaTek CRM." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AuthPage,

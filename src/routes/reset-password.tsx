@@ -6,7 +6,14 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
-    meta: [{ title: "إعادة تعيين كلمة المرور — DafaTek CRM" }],
+    meta: [
+      { title: "إعادة تعيين كلمة المرور — DafaTek CRM" },
+      { name: "description", content: "تعيين كلمة مرور جديدة لحسابك في DafaTek CRM." },
+      { property: "og:title", content: "إعادة تعيين كلمة المرور — DafaTek CRM" },
+      { property: "og:description", content: "تعيين كلمة مرور جديدة لحسابك في DafaTek CRM." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
   }),
   component: ResetPasswordPage,
 });
