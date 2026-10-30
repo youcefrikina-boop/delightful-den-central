@@ -1,4 +1,5 @@
-import { describe, expect, test } from "bun:test";
+import { describe, test } from "node:test";
+import { deepStrictEqual } from "node:assert";
 import { filterCustomers } from "./customerFilters";
 import type { CRMRecord } from "./types";
 
@@ -10,13 +11,13 @@ const records = [
 
 describe("customer selection", () => {
   test("only the selected service is shown", () => {
-    expect(filterCustomers(records, "", "all", "plumbing", "newest").map(r => r.id)).toEqual(["3", "2"]);
+    deepStrictEqual(filterCustomers(records, "", "all", "plumbing", "newest").map(r => r.id), ["3", "2"]);
   });
   test("all restores every service", () => {
-    expect(filterCustomers(records, "", "all", "all", "oldest").map(r => r.id)).toEqual(["1", "2", "3"]);
+    deepStrictEqual(filterCustomers(records, "", "all", "all", "oldest").map(r => r.id), ["1", "2", "3"]);
   });
   test("service combines with status and search", () => {
-    expect(filterCustomers(records, "سليم", "waiting", "plumbing", "newest").map(r => r.id)).toEqual(["3"]);
-    expect(filterCustomers(records, "أحمد", "waiting", "plumbing", "newest")).toEqual([]);
+    deepStrictEqual(filterCustomers(records, "سليم", "waiting", "plumbing", "newest").map(r => r.id), ["3"]);
+    deepStrictEqual(filterCustomers(records, "أحمد", "waiting", "plumbing", "newest"), []);
   });
 });
