@@ -8,6 +8,7 @@ import { t } from "@/lib/i18n";
 import { paymentTotals } from "@/lib/payment";
 import { calculateTempsAttente } from "@/lib/calculateTempsAttente";
 import { useCRM } from "@/context/CRMProvider";
+import { TasksChecklist } from "@/components/cards/TasksChecklist";
 import { WarrantyCard } from "@/components/cards/WarrantyCard";
 
 interface Props {
@@ -158,6 +159,8 @@ export function CustomerCard({ record, lang, onEdit, onDelete, onShowDetails }: 
           <p className="mt-1 line-clamp-2 text-xs text-slate-300">{record.fault}</p>
         </div>
       )}
+
+      <div className="px-4 pb-3"><TasksChecklist record={record} /></div>
 
       {/* Financial footer */}
       <div className="mt-auto flex items-center justify-between border-t border-slate-800 bg-[#0a1428]/60 px-4 py-2.5">

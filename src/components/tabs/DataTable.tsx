@@ -32,18 +32,18 @@ const STATUS_COLOR: Record<Status, string> = {
 
 const inp = "w-full rounded-md border border-slate-700 bg-[#0d1a2e] px-2 py-1 text-sm text-slate-100";
 
-export function DataTable() {
+export function DataTable({ selectedRecords, hideSearch = false }: { selectedRecords?: CRMRecord[]; hideSearch?: boolean }) {
   const { records, updateRecord, deleteRecord, lang } = useCRM();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [query, setQuery] = useState("");
 
-  const filtered = records.filter((r) =>
+  const filtered = (selectedRecords ?? records).filter((r) =>
     [r.client, r.phone, r.zone, r.brand, r.model, r.fault].join(" ").toLowerCase().includes(query.toLowerCase()),
   );
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-[#0a1428] px-3 py-2">
+      {!hideSearch && <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-[#0a1428] px-3 py-2">
         <Search className="size-4 text-slate-400" />
         <input
           value={query}
@@ -52,7 +52,7 @@ export function DataTable() {
           className="flex-1 bg-transparent text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
         />
         <span className="text-xs text-slate-500">{filtered.length} / {records.length}</span>
-      </div>
+      </div>}
 
       {filtered.length === 0 && (
         <div className="rounded-xl border border-dashed border-slate-700 p-8 text-center text-sm text-slate-400">
@@ -195,11 +195,8 @@ export function DataTable() {
 
                   <div className="grid gap-3 lg:grid-cols-2">
                     <PaymentCard payment={r.payment} onChange={(p) => updateRecord(r.id, { payment: p })} />
-                    {isBoiler ? (
-                      <WarrantyCard warranty={r.warranty} onChange={(w) => updateRecord(r.id, { warranty: w })} />
-                    ) : (
-                      <TasksChecklist record={r} />
-                    )}
+                    {isBoiler && <WarrantyCard warranty={r.warranty} onChange={(w) => updateRecord(r.id, { warranty: w })} />}
+                    <TasksChecklist record={r} />
                     <AppointmentBadge record={r} />
                     <MaintenanceClock record={r} />
                     <HealthyRunTime record={r} />
