@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCRM } from "@/context/CRMProvider";
 import { t, SERVICE_TYPE_LABEL } from "@/lib/i18n";
-import type { ServiceType, Status } from "@/lib/types";
+import { filterCustomers, type CustomerSort } from "@/lib/customerFilters";
+import type { Status } from "@/lib/types";
 import { CustomerCard } from "@/components/cards/CustomerCard";
 import { CustomerEditModal } from "@/components/cards/CustomerEditModal";
 import { DataTable } from "@/components/tabs/DataTable";
@@ -13,26 +14,28 @@ interface Props {
 }
 
 const STATUSES: (Status | "all")[] = ["all", "waiting", "done", "cancelled"];
-const SERVICE_TYPES: (ServiceType | "all")[] = ["all", "boiler", "heating", "plumbing", "pvc", "gas", "handyman", "allWorks"];
+const SERVICE_TYPES: string[] = ["all", "boiler", "heating", "plumbing", "pvc", "gas", "handyman", "allWorks"];
 
 export function CustomersGrid({ view }: Props) {
   const { records, lang, deleteRecord } = useCRM();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<Status | "all">("all");
-  const [serviceFilter, setServiceFilter] = useState<ServiceType | "all">("all");
+  const [serviceFilter, setServiceFilter] = useState("all");
   const [editingRecord, setEditingRecord] = useState<CRMRecord | null>(null);
 
-  const filtered = useMemo(() => {
-    return records.filter((r) => {
-      const q = query.trim().toLowerCase();
-      const matchQ = !q || [r.client, r.phone, r.zone, r.brand, r.model, r.fault].join(" ").toLowerCase().includes(q);
-      const matchS = statusFilter === "all" || r.status === statusFilter;
-      const matchT = serviceFilter === "all" || r.serviceType === serviceFilter;
-      return matchQ && matchS && matchT;
-    });
-  }, [records, query, statusFilter, serviceFilter]);
-
-  if (view === "list") return <DataTable />;
+  const [sort, setSort] = useState<CustomerSort>("newest");
+  const [customServices, setCustomServices] = useState<{ value: string; label: string }[]>([]);
+  const [serviceOverrides, setServiceOverrides] = useState<Record<string, string>>({});
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("dafatek_opts_serviceType") ?? "{}");
+      setCustomServices(Array.isArray(stored.custom) ? stored.custom : []);
+      setServiceOverrides(stored.overrides ?? {});
+    } catch { /* Keep built-in options if saved options are invalid. */ }
+  }, []);
+  const services = [...new Set([...SERVICE_TYPES, ...customServices.map(s => s.value), ...records.map(r => r.serviceType)])];
+  const filtered = useMemo(() => filterCustomers(records, query, statusFilter, serviceFilter, sort),
+    [records, query, statusFilter, serviceFilter, sort]);
 
   return (
     <div className="space-y-4">
@@ -54,6 +57,7 @@ export function CustomersGrid({ view }: Props) {
 
         <div className="relative">
           <select
+            aria-label={t(lang, "status")}
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as Status | "all")}
             className="appearance-none rounded-lg border border-slate-700 bg-[#0d1a2e] py-2 ps-3 pe-9 text-xs text-slate-100 focus:border-cyan-500/60 focus:outline-none"
@@ -67,19 +71,24 @@ export function CustomersGrid({ view }: Props) {
           <Zap className="pointer-events-none absolute end-2 top-1/2 size-3.5 -translate-y-1/2 text-amber-300" />
         </div>
 
-        <div className="relative">
-          <select
-            value={serviceFilter}
-            onChange={(e) => setServiceFilter(e.target.value as ServiceType | "all")}
-            className="appearance-none rounded-lg border border-slate-700 bg-[#0d1a2e] py-2 ps-3 pe-9 text-xs text-slate-100 focus:border-cyan-500/60 focus:outline-none"
-          >
-            {SERVICE_TYPES.map((s) => (
-              <option key={s} value={s}>
-                {s === "all" ? `${t(lang, "all")} 🛠️` : SERVICE_TYPE_LABEL[lang][s]}
-              </option>
-            ))}
-          </select>
-          <Wrench className="pointer-events-none absolute end-2 top-1/2 size-3.5 -translate-y-1/2 text-cyan-300" />
+        <div className="crm-controls flex flex-wrap items-center gap-2">
+          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            {t(lang, "sortBy")}
+            <select aria-label={t(lang, "sortBy")} value={sort} onChange={e => setSort(e.target.value as CustomerSort)}
+              className="max-w-full rounded-md border border-input bg-background px-2 py-2 text-xs text-foreground">
+              <option value="newest">{t(lang, "sortNewest")}</option>
+              <option value="oldest">{t(lang, "sortOldest")}</option>
+              <option value="name">{t(lang, "client")}</option>
+            </select>
+          </label>
+          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Wrench className="size-3.5 text-primary" />{t(lang, "serviceType")}
+            <select aria-label={t(lang, "serviceType")} value={serviceFilter} onChange={e => setServiceFilter(e.target.value)}
+              className="max-w-full rounded-md border border-input bg-background px-2 py-2 text-xs text-foreground">
+              {services.map(s => <option key={s} value={s}>{s === "all" ? t(lang, "all") :
+                serviceOverrides[s] ?? customServices.find(c => c.value === s)?.label ?? SERVICE_TYPE_LABEL[lang][s] ?? s.replace(/^custom:/, "").split(":")[0].replaceAll("_", " ")}</option>)}
+            </select>
+          </label>
         </div>
 
         <span className="rounded-md border border-slate-700 bg-[#0d1a2e] px-2 py-1 text-[11px] text-slate-400">
@@ -88,7 +97,7 @@ export function CustomersGrid({ view }: Props) {
       </div>
 
       {/* Grid of cards */}
-      {filtered.length === 0 ? (
+      {view === "list" ? <DataTable selectedRecords={filtered} hideSearch /> : filtered.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-700 p-8 text-center text-sm text-slate-400">
           {t(lang, "noResults")}
         </div>
