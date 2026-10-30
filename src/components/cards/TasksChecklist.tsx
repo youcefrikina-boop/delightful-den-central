@@ -5,11 +5,14 @@ import { t } from "@/lib/i18n";
 import { ListChecks, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function TasksChecklist({ record }: { record: CRMRecord }) {
+export function TasksChecklist({ record, onTasksChange }: { record: CRMRecord; onTasksChange?: (tasks: Task[]) => void }) {
   const { updateRecord, lang } = useCRM();
   const [draft, setDraft] = useState("");
   const tasks: Task[] = record.tasks ?? [];
-  function setTasks(arr: Task[]) { updateRecord(record.id, { tasks: arr }); }
+  function setTasks(arr: Task[]) {
+    if (onTasksChange) onTasksChange(arr);
+    else updateRecord(record.id, { tasks: arr });
+  }
   function addTask() {
     if (!draft.trim()) return;
     setTasks([...tasks, { id: crypto.randomUUID(), text: draft.trim(), done: false }]);
