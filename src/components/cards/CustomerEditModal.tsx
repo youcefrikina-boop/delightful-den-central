@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Save, UserRoundPen, X } from "lucide-react";
 import { EditableSelect } from "@/components/EditableSelect";
+import { TasksChecklist } from "@/components/cards/TasksChecklist";
 import { useCRM } from "@/context/CRMProvider";
 import { ALL_BRANDS, BRAND_MODELS } from "@/lib/brandModels";
 import { SERVICE_TYPE_LABEL, t } from "@/lib/i18n";
@@ -137,6 +138,9 @@ export function CustomerEditModal({ record, onClose }: Props) {
           <Field label={t(lang, "finalDiagnostic")} className="sm:col-span-2">
             <textarea className={`${inputClass} min-h-20 resize-y`} value={draft.diagnosticFinal ?? ""} onChange={(e) => patch({ diagnosticFinal: e.target.value })} />
           </Field>
+          <div className="min-w-0 sm:col-span-2">
+            <TasksChecklist record={draft} onTasksChange={(tasks) => patch({ tasks })} />
+          </div>
         </div>
 
         <div className="sticky bottom-0 flex justify-end gap-2 border-t border-slate-800 bg-[#0a1428] px-4 py-3">
