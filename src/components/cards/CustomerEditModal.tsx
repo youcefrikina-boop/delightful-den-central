@@ -5,7 +5,7 @@ import { TasksChecklist } from "@/components/cards/TasksChecklist";
 import { useCRM } from "@/context/CRMProvider";
 import { ALL_BRANDS, BRAND_MODELS } from "@/lib/brandModels";
 import { SERVICE_TYPE_LABEL, t } from "@/lib/i18n";
-import type { CRMRecord, FinalState, InstallationLocation, Lang, ServiceType, Status } from "@/lib/types";
+import type { CRMRecord, FieldStatus, FinalState, InstallationLocation, Lang, ServiceType, Status } from "@/lib/types";
 
 interface Props {
   record: CRMRecord;
@@ -28,6 +28,10 @@ const locationOptions = (lang: Lang) => [
 ];
 const statusOptions = (lang: Lang) => STATUSES.map((value) => ({ value, label: t(lang, `st_${value}`) }));
 const finalStateOptions = (lang: Lang) => FINAL_STATES.map((value) => ({ value, label: t(lang, `fs_${value}`) }));
+const fieldStatusOptions = (lang: Lang) => [
+  { value: "inspected", label: t(lang, "field_inspected") },
+  { value: "notInspected", label: t(lang, "field_notInspected") },
+];
 const boilerActionOptions = (lang: Lang) => BOILER_ACTIONS.map((value) => ({
   value,
   label: t(lang, `act${value[0].toUpperCase()}${value.slice(1)}`),
@@ -114,6 +118,9 @@ export function CustomerEditModal({ record, onClose }: Props) {
           </Field>
           <Field label={t(lang, "finalState")}>
             <EditableSelect storageKey="dafatek_opts_finalState" baseOptions={finalStateOptions(lang)} value={draft.finalState ?? ""} onChange={(value) => patch({ finalState: (value || undefined) as FinalState | undefined })} disabled={draft.status !== "waiting"} allowEmpty emptyLabel={t(lang, "fs_none")} />
+          </Field>
+          <Field label={t(lang, "fieldStatus")}>
+            <EditableSelect storageKey="dafatek_opts_fieldStatus" baseOptions={fieldStatusOptions(lang)} value={draft.fieldStatus ?? ""} onChange={(value) => patch({ fieldStatus: (value || undefined) as FieldStatus | undefined })} allowEmpty emptyLabel={t(lang, "field_unset")} />
           </Field>
 
           {isBoiler && (
