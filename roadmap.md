@@ -1,4 +1,11 @@
 # Tasks
+- [ ] Preserve stored customer and technical text across UI languages.
+- [ ] Add manual location input, copy and Google Maps access.
+- [ ] Enforce completed daily-plan removal and next-visit archive restoration.
+- [ ] Persist and filter the fault guide by brand and error code.
+- [ ] Add client and expense ledgers with revenue, expense and profit totals.
+- [ ] Add recoverable trash with explicit permanent deletion.
+- [ ] Test persistence, tracking rules and signed-in workflows.
 - [x] Add multi-task editing directly in customer cards.
 - [x] Place service filtering beside sorting and apply it to card and list views.
 - [x] Verify saved tasks and filtering in the signed-in app.
