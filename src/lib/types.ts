@@ -16,6 +16,9 @@ export type BoilerAction = string;
 export type Status = "waiting" | "done" | "cancelled";
 export type FinalState = "awaitingParts" | "enRoute" | "warrantyFollowUp";
 
+/** Field inspection status: has the site been inspected yet? */
+export type FieldStatus = "inspected" | "notInspected";
+
 /** Map any legacy status string ("new", "inProgress", "waitingParts") to the new 3-value enum. */
 export function normalizeStatus(s: string | undefined | null): Status {
   if (s === "done" || s === "cancelled") return s;
@@ -80,6 +83,7 @@ export interface CRMRecord {
   boilerAction?: BoilerAction;
   status: Status;
   finalState?: FinalState;
+  fieldStatus?: FieldStatus;
   fault: string;
   diagnosticFinal?: string;
   assignedTech?: string;
