@@ -4,7 +4,7 @@ import { ALL_BRANDS, BRAND_MODELS } from "@/lib/brandModels";
 import { t, SERVICE_TYPE_LABEL } from "@/lib/i18n";
 import type {
   InstallationLocation, ServiceType, Status,
-  FinalState, Warranty, Task, Lang,
+  FinalState, FieldStatus, Warranty, Task, Lang,
 } from "@/lib/types";
 import { Plus, Save } from "lucide-react";
 import { EditableSelect } from "@/components/EditableSelect";
@@ -30,6 +30,10 @@ const statusOpts = (lang: Lang) =>
   STATUSES.map((s) => ({ value: s, label: t(lang, "st_" + s) }));
 const finalStateOpts = (lang: Lang) =>
   FINAL_STATES.map((fs) => ({ value: fs, label: t(lang, "fs_" + fs) }));
+const fieldStatusOpts = (lang: Lang) => [
+  { value: "inspected", label: t(lang, "field_inspected") },
+  { value: "notInspected", label: t(lang, "field_notInspected") },
+];
 
 export function QuickEntryForm() {
   const { addRecord, lang } = useCRM();
@@ -43,6 +47,7 @@ export function QuickEntryForm() {
   const [boilerAction, setBoilerAction] = useState<string>("repair");
   const [status, setStatus] = useState<Status>("waiting");
   const [finalState, setFinalState] = useState<FinalState | "">("");
+  const [fieldStatus, setFieldStatus] = useState<FieldStatus | "">("");
   const [fault, setFault] = useState("");
   const [warranty, setWarranty] = useState<Warranty>({ status: "out" });
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -67,6 +72,7 @@ export function QuickEntryForm() {
       boilerAction: isBoiler ? boilerAction : undefined,
       status,
       finalState: status === "waiting" ? (finalState || undefined) : undefined,
+      fieldStatus: fieldStatus || undefined,
       fault: fault.trim(),
       warranty: isBoiler ? warranty : undefined,
       tasks: isBoiler ? [] : tasks,
@@ -74,7 +80,7 @@ export function QuickEntryForm() {
     });
     setClient(""); setPhone(""); setZone(""); setBrand(""); setModel(""); setFault("");
     setWarranty({ status: "out" }); setTasks([]); setTaskDraft("");
-    setStatus("waiting"); setFinalState(""); setServiceType("boiler");
+    setStatus("waiting"); setFinalState(""); setFieldStatus(""); setServiceType("boiler");
     setBoilerAction("repair"); setInstallationLocation("home");
     setToast(t(lang, "saved"));
     setTimeout(() => setToast(null), 2200);
@@ -164,6 +170,16 @@ export function QuickEntryForm() {
             disabled={status !== "waiting"}
             allowEmpty
             emptyLabel={t(lang, "fs_none")}
+          />
+        </Field>
+        <Field label={t(lang, "fieldStatus")}>
+          <EditableSelect
+            storageKey="dafatek_opts_fieldStatus"
+            baseOptions={fieldStatusOpts(lang)}
+            value={fieldStatus}
+            onChange={(v) => setFieldStatus(v as FieldStatus | "")}
+            allowEmpty
+            emptyLabel={t(lang, "field_unset")}
           />
         </Field>
         <Field label={t(lang, "fault")} className="sm:col-span-2">

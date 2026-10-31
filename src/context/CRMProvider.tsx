@@ -117,6 +117,7 @@ export function CRMProvider({
         boilerAction: r.boilerAction,
         status,
         finalState: status === "waiting" ? r.finalState : undefined,
+        fieldStatus: r.fieldStatus,
         fault: r.fault ?? "",
         diagnosticFinal: r.diagnosticFinal,
         assignedTech: r.assignedTech,
