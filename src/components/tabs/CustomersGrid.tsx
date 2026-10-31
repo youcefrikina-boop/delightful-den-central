@@ -6,7 +6,7 @@ import type { Status } from "@/lib/types";
 import { CustomerCard } from "@/components/cards/CustomerCard";
 import { CustomerEditModal } from "@/components/cards/CustomerEditModal";
 import { DataTable } from "@/components/tabs/DataTable";
-import { Search, Globe, Zap, Wrench } from "lucide-react";
+import { Search, Globe, Zap, Wrench, ClipboardCheck } from "lucide-react";
 import type { CRMRecord } from "@/lib/types";
 
 interface Props {
@@ -21,6 +21,7 @@ export function CustomersGrid({ view }: Props) {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<Status | "all">("all");
   const [serviceFilter, setServiceFilter] = useState("all");
+  const [fieldFilter, setFieldFilter] = useState("all");
   const [editingRecord, setEditingRecord] = useState<CRMRecord | null>(null);
 
   const [sort, setSort] = useState<CustomerSort>("newest");
@@ -34,8 +35,8 @@ export function CustomersGrid({ view }: Props) {
     } catch { /* Keep built-in options if saved options are invalid. */ }
   }, []);
   const services = [...new Set([...SERVICE_TYPES, ...customServices.map(s => s.value), ...records.map(r => r.serviceType)])];
-  const filtered = useMemo(() => filterCustomers(records, query, statusFilter, serviceFilter, sort),
-    [records, query, statusFilter, serviceFilter, sort]);
+  const filtered = useMemo(() => filterCustomers(records, query, statusFilter, serviceFilter, sort, fieldFilter),
+    [records, query, statusFilter, serviceFilter, sort, fieldFilter]);
 
   return (
     <div className="space-y-4">
@@ -79,6 +80,16 @@ export function CustomersGrid({ view }: Props) {
               <option value="newest">{t(lang, "sortNewest")}</option>
               <option value="oldest">{t(lang, "sortOldest")}</option>
               <option value="name">{t(lang, "client")}</option>
+            </select>
+          </label>
+          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            <ClipboardCheck className="size-3.5 text-primary" />{t(lang, "fieldStatus")}
+            <select aria-label={t(lang, "fieldStatus")} value={fieldFilter} onChange={e => setFieldFilter(e.target.value)}
+              className="max-w-full rounded-md border border-input bg-background px-2 py-2 text-xs text-foreground">
+              <option value="all">{t(lang, "all")}</option>
+              <option value="inspected">{t(lang, "field_inspected")}</option>
+              <option value="notInspected">{t(lang, "field_notInspected")}</option>
+              <option value="unset">{t(lang, "field_unset")}</option>
             </select>
           </label>
           <label className="flex items-center gap-2 text-xs text-muted-foreground">

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   Trash2, Pencil, FileText, Wrench, MapPin, Clock, Sparkles, Hourglass,
-  ChevronDown, Search as SearchIcon, ShieldCheck, X,
+  ChevronDown, Search as SearchIcon, ShieldCheck, X, ClipboardCheck,
 } from "lucide-react";
 import type { CRMRecord, Lang, Warranty } from "@/lib/types";
 import { t } from "@/lib/i18n";
@@ -51,6 +51,11 @@ export function CustomerCard({ record, lang, onEdit, onDelete, onShowDetails }: 
   }, [records, record]);
 
   const wTone = warrantyTone(record.warranty);
+  const fieldBadge = record.fieldStatus === "inspected"
+    ? { cls: "bg-emerald-500/15 text-emerald-300 ring-emerald-500/40", label: t(lang, "field_inspected") }
+    : record.fieldStatus === "notInspected"
+      ? { cls: "bg-amber-500/15 text-amber-300 ring-amber-500/40", label: t(lang, "field_notInspected") }
+      : null;
   const warrantyBadge = {
     active: { cls: "bg-emerald-500 text-slate-950 ring-emerald-300", label: t(lang, "warrantyActiveBadge") },
     expired: { cls: "bg-amber-500 text-slate-950 ring-amber-300", label: t(lang, "warrantyExpiredBadge") },
@@ -77,6 +82,12 @@ export function CustomerCard({ record, lang, onEdit, onDelete, onShowDetails }: 
           <FileText className="size-4 text-cyan-300" />
           <h3 className="truncate text-sm font-semibold text-slate-100">{record.client}</h3>
           <Wrench className="size-3.5 text-amber-300" />
+          {fieldBadge && (
+            <span className={`ms-auto inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ring-1 ${fieldBadge.cls}`}>
+              <ClipboardCheck className="size-3" />
+              {fieldBadge.label}
+            </span>
+          )}
         </div>
         <div className="mt-1 space-y-0.5 text-xs text-slate-400">
           {record.phone && <div className="ltr:text-left">{record.phone}</div>}
