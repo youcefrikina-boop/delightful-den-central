@@ -14,11 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      client_accounts: {
+        Row: {
+          amount_paid: number
+          billed_labor: number
+          billed_parts: number
+          client_name: string
+          deleted_at: string | null
+          id: string
+          owner_id: string
+          record_id: string
+          remaining_debt: number | null
+          total_bill: number | null
+          updated_at: string
+        }
+        Insert: {
+          amount_paid?: number
+          billed_labor?: number
+          billed_parts?: number
+          client_name?: string
+          deleted_at?: string | null
+          id?: string
+          owner_id: string
+          record_id: string
+          remaining_debt?: number | null
+          total_bill?: number | null
+          updated_at?: string
+        }
+        Update: {
+          amount_paid?: number
+          billed_labor?: number
+          billed_parts?: number
+          client_name?: string
+          deleted_at?: string | null
+          id?: string
+          owner_id?: string
+          record_id?: string
+          remaining_debt?: number | null
+          total_bill?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_accounts_record_id_fkey"
+            columns: ["record_id"]
+            isOneToOne: true
+            referencedRelation: "crm_records"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_records: {
         Row: {
           client_phone: string | null
           created_at: string
           data: Json
+          deleted_at: string | null
           id: string
           owner_id: string
           updated_at: string
@@ -27,6 +78,7 @@ export type Database = {
           client_phone?: string | null
           created_at?: string
           data: Json
+          deleted_at?: string | null
           id?: string
           owner_id: string
           updated_at?: string
@@ -35,6 +87,7 @@ export type Database = {
           client_phone?: string | null
           created_at?: string
           data?: Json
+          deleted_at?: string | null
           id?: string
           owner_id?: string
           updated_at?: string
@@ -62,6 +115,89 @@ export type Database = {
           technician?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      expense_logs: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          deleted_at: string | null
+          description: string
+          expense_date: string
+          id: string
+          owner_id: string
+          record_id: string | null
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          deleted_at?: string | null
+          description?: string
+          expense_date?: string
+          id?: string
+          owner_id: string
+          record_id?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          deleted_at?: string | null
+          description?: string
+          expense_date?: string
+          id?: string
+          owner_id?: string
+          record_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_logs_record_id_fkey"
+            columns: ["record_id"]
+            isOneToOne: false
+            referencedRelation: "crm_records"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fault_guide: {
+        Row: {
+          brand: string
+          cause: string
+          code: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          owner_id: string | null
+          problem: string
+          solution: string
+          updated_at: string
+        }
+        Insert: {
+          brand: string
+          cause?: string
+          code: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          owner_id?: string | null
+          problem: string
+          solution: string
+          updated_at?: string
+        }
+        Update: {
+          brand?: string
+          cause?: string
+          code?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          owner_id?: string | null
+          problem?: string
+          solution?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -112,6 +248,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      crm_amount: { Args: { value: string }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
