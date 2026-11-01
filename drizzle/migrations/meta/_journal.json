@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1793516724508,
+      "tag": "0000_workshop_ledgers_fault_guide_and_trash",
+      "breakpoints": true
+    }
+  ]
+}
