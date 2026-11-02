@@ -8,6 +8,7 @@ import type {
 } from "@/lib/types";
 import { Plus, Save } from "lucide-react";
 import { EditableSelect } from "@/components/EditableSelect";
+import { LocationField } from '@/components/cards/LocationField';
 
 const inputClass =
   "w-full rounded-lg border border-slate-700 bg-[#0d1a2e] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none";
@@ -40,6 +41,7 @@ export function QuickEntryForm() {
   const [client, setClient] = useState("");
   const [phone, setPhone] = useState("");
   const [zone, setZone] = useState("");
+  const [manualLocation, setManualLocation] = useState('');
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
   const [serviceType, setServiceType] = useState<ServiceType>("boiler");
@@ -58,10 +60,11 @@ export function QuickEntryForm() {
   const modelsForBrand = matchedKey ? BRAND_MODELS[matchedKey] : [];
   const isBoiler = serviceType === "boiler";
 
-  function submit(e: FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
     if (!client.trim()) return;
-    addRecord({
+    const saved = await addRecord({
+      manualLocation,
       client: client.trim(),
       phone: phone.trim(),
       zone: zone.trim(),
@@ -75,9 +78,11 @@ export function QuickEntryForm() {
       fieldStatus: fieldStatus || undefined,
       fault: fault.trim(),
       warranty: isBoiler ? warranty : undefined,
-      tasks: isBoiler ? [] : tasks,
+      tasks,
       payment: {},
     });
+    if (!saved) return;
+    setManualLocation('');
     setClient(""); setPhone(""); setZone(""); setBrand(""); setModel(""); setFault("");
     setWarranty({ status: "out" }); setTasks([]); setTaskDraft("");
     setStatus("waiting"); setFinalState(""); setFieldStatus(""); setServiceType("boiler");
@@ -125,6 +130,7 @@ export function QuickEntryForm() {
             onChange={(v) => setServiceType(v as ServiceType)}
           />
         </Field>
+        <div className="sm:col-span-2 crm-controls"><LocationField value={manualLocation} onChange={setManualLocation} /></div>
         <Field label={t(lang, "location")}>
           <EditableSelect
             storageKey="dafatek_opts_location"
@@ -217,7 +223,7 @@ export function QuickEntryForm() {
         </fieldset>
       )}
 
-      {!isBoiler && (
+      {(
         <fieldset className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
           <legend className="px-2 text-sm font-semibold text-amber-200">{t(lang, "tasks")}</legend>
           <ul className="mb-2 space-y-1">

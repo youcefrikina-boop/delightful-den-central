@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Save, UserRoundPen, X } from "lucide-react";
 import { EditableSelect } from "@/components/EditableSelect";
 import { TasksChecklist } from "@/components/cards/TasksChecklist";
+import { LocationField } from '@/components/cards/LocationField';
 import { useCRM } from "@/context/CRMProvider";
 import { ALL_BRANDS, BRAND_MODELS } from "@/lib/brandModels";
 import { SERVICE_TYPE_LABEL, t } from "@/lib/i18n";
@@ -50,10 +51,10 @@ export function CustomerEditModal({ record, onClose }: Props) {
     setDraft((current) => ({ ...current, ...values }));
   }
 
-  function submit(event: FormEvent) {
+  async function submit(event: FormEvent) {
     event.preventDefault();
     if (!draft.client.trim()) return;
-    updateRecord(record.id, {
+    const saved = await updateRecord(record.id, {
       ...draft,
       client: draft.client.trim(),
       phone: draft.phone.trim(),
@@ -64,7 +65,7 @@ export function CustomerEditModal({ record, onClose }: Props) {
       finalState: draft.status === "waiting" ? draft.finalState : undefined,
       boilerAction: isBoiler ? draft.boilerAction : undefined,
     });
-    onClose();
+    if (saved) onClose();
   }
 
   return (
@@ -97,6 +98,7 @@ export function CustomerEditModal({ record, onClose }: Props) {
           <Field label={t(lang, "registrationDate")}>
             <input type="datetime-local" className={inputClass} value={draft.createdAt.slice(0, 16)} onChange={(e) => patch({ createdAt: new Date(e.target.value).toISOString() })} />
           </Field>
+          <div className="sm:col-span-2 crm-controls"><LocationField value={draft.manualLocation ?? ''} onChange={manualLocation => patch({manualLocation})} /></div>
           <Field label={t(lang, "completionDate")}>
             <input type="datetime-local" className={inputClass} value={draft.completionDate?.slice(0, 16) ?? ""} onChange={(e) => patch({ completionDate: e.target.value ? new Date(e.target.value).toISOString() : undefined })} />
           </Field>
