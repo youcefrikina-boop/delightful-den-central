@@ -1,175 +1,56 @@
-import { useMemo } from "react";
-import { useCRM } from "@/context/CRMProvider";
-import { t } from "@/lib/i18n";
-import { paymentTotals, paymentColor } from "@/lib/payment";
-import { DollarSign, TrendingUp, TrendingDown, CheckCircle2, AlertCircle, Clock, Flame, Hammer, Wrench, Thermometer, Pipette } from "lucide-react";
-import type { CRMRecord, ServiceType } from "@/lib/types";
+import { useState } from 'react';
+import { DollarSign, Plus, Pencil, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useCRM } from '@/context/CRMProvider';
+import { useWorkshop, type ExpenseEntry } from '@/lib/useWorkshop';
+import { supabase } from '@/integrations/supabase/client';
+import { financialSummary, wt } from '@/lib/workshop';
+import { t } from '@/lib/i18n';
 
-const SERVICE_META: Record<ServiceType, { icon: React.ReactNode; label: string; tone: string }> = {
-  boiler: { icon: <Flame className="size-3.5" />, label: "Chaudière", tone: "text-orange-300 bg-orange-500/15" },
-  heating: { icon: <Thermometer className="size-3.5" />, label: "Chauffage", tone: "text-rose-300 bg-rose-500/15" },
-  plumbing: { icon: <Pipette className="size-3.5" />, label: "Plombier", tone: "text-sky-300 bg-sky-500/15" },
-  pvc: { icon: <Wrench className="size-3.5" />, label: "PVC", tone: "text-purple-300 bg-purple-500/15" },
-  gas: { icon: <Flame className="size-3.5" />, label: "Gaz", tone: "text-amber-300 bg-amber-500/15" },
-  handyman: { icon: <Hammer className="size-3.5" />, label: "Bricolage", tone: "text-yellow-300 bg-yellow-500/15" },
-  allWorks: { icon: <Wrench className="size-3.5" />, label: "Tout", tone: "text-slate-300 bg-slate-500/15" },
-};
-
+const input='w-full rounded-md border border-input bg-background px-3 py-2 text-sm';
 export function Accounting() {
-  const { records, lang } = useCRM();
-
-  const stats = useMemo(() => {
-    let revenue = 0, paid = 0, debt = 0;
-    let cPaid = 0, cPartial = 0, cDebt = 0;
-    const debtors: { r: CRMRecord; total: number; remaining: number }[] = [];
-    const paidList: { r: CRMRecord; total: number }[] = [];
-    records.forEach((r) => {
-      const tot = paymentTotals(r.payment);
-      revenue += tot.total;
-      paid += tot.advance;
-      debt += tot.remaining;
-      const c = paymentColor(r.payment);
-      if (c === "paid") { cPaid++; paidList.push({ r, total: tot.total }); }
-      else if (c === "partial") { cPartial++; debtors.push({ r, total: tot.total, remaining: tot.remaining }); }
-      else if (c === "debt") { cDebt++; debtors.push({ r, total: tot.total, remaining: tot.remaining }); }
-    });
-    debtors.sort((a, b) => b.remaining - a.remaining);
-    paidList.sort((a, b) => b.total - a.total);
-    return { revenue, paid, debt, cPaid, cPartial, cDebt, debtors, paidList: paidList.slice(0, 5) };
-  }, [records]);
-
-  const totalStatus = stats.cPaid + stats.cPartial + stats.cDebt || 1;
-
-  return (
-    <div className="mx-auto max-w-3xl space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-center gap-2.5">
-        <h2 className="text-base font-bold text-emerald-300">{t(lang, "financialSummary")}</h2>
-        <div className="grid size-9 place-items-center rounded-lg bg-emerald-500/20 text-emerald-300">
-          <DollarSign className="size-5" />
-        </div>
-      </div>
-
-      {/* KPI cards */}
-      <div className="grid grid-cols-3 gap-2.5">
-        <KpiBox icon={<TrendingUp className="size-4" />} label={t(lang, "totalRevenue")} value={stats.revenue} tone="cyan" />
-        <KpiBox icon={<CheckCircle2 className="size-4" />} label={t(lang, "totalPaid")} value={stats.paid} tone="emerald" />
-        <KpiBox icon={<TrendingDown className="size-4" />} label={t(lang, "totalDebt")} value={stats.debt} tone="rose" />
-      </div>
-
-      {/* Distribution */}
-      <div className="rounded-xl border border-slate-800 bg-[#0a1428] p-4">
-        <h3 className="mb-4 text-center text-sm font-semibold text-slate-200">{t(lang, "paymentStatusDistribution")}</h3>
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <StatusCircle icon={<AlertCircle className="size-5" />} count={stats.cDebt} label={t(lang, "debtor")} tone="rose" />
-          <StatusCircle icon={<Clock className="size-5" />} count={stats.cPartial} label={t(lang, "partialPayment")} tone="amber" />
-          <StatusCircle icon={<CheckCircle2 className="size-5" />} count={stats.cPaid} label={t(lang, "paidShort")} tone="emerald" />
-        </div>
-        <div className="mt-4 flex h-2 overflow-hidden rounded-full bg-slate-800">
-          <div className="bg-rose-500" style={{ width: `${(stats.cDebt / totalStatus) * 100}%` }} />
-          <div className="bg-amber-500" style={{ width: `${(stats.cPartial / totalStatus) * 100}%` }} />
-          <div className="bg-emerald-500" style={{ width: `${(stats.cPaid / totalStatus) * 100}%` }} />
-        </div>
-      </div>
-
-      {/* Debtors */}
-      <div className="rounded-xl border border-slate-800 bg-[#0a1428] p-3">
-        <div className="mb-3 flex items-center justify-end gap-2 px-1">
-          <h3 className="text-sm font-semibold text-rose-300">{t(lang, "debtorsList")}</h3>
-          <span className="grid size-5 place-items-center rounded-full bg-rose-500/20 text-[10px] font-bold text-rose-300">{stats.debtors.length}</span>
-          <AlertCircle className="size-4 text-rose-400" />
-        </div>
-        <ul className="space-y-1.5">
-          {stats.debtors.map(({ r, total, remaining }) => {
-            const meta = SERVICE_META[r.serviceType];
-            return (
-              <li key={r.id} className="relative overflow-hidden rounded-lg bg-[#0d1a2e] py-2 ps-3 pe-2">
-                <span className="absolute inset-y-0 end-0 w-1 bg-rose-500" />
-                <div className="flex items-center justify-between gap-2">
-                  <div className="text-end text-xs">
-                    <div className="font-bold text-rose-300">{total.toLocaleString()} {t(lang, "dzd")}</div>
-                    <div className="text-[11px] text-rose-400">-{remaining.toLocaleString()} {t(lang, "dzd")}</div>
-                  </div>
-                  <div className="flex min-w-0 items-center gap-2">
-                    <div className="min-w-0 text-end">
-                      <div className="truncate text-sm font-medium text-slate-100">{r.client}</div>
-                      <div className="truncate text-[10px] text-slate-500">Visite {r.visitNumber} · {r.phone}</div>
-                    </div>
-                    <span className={`grid size-7 place-items-center rounded-md ${meta.tone}`}>{meta.icon}</span>
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-          {stats.debtors.length === 0 && (
-            <li className="py-6 text-center text-xs text-slate-500">—</li>
-          )}
-        </ul>
-      </div>
-
-      {/* Top paid invoices */}
-      <div className="rounded-xl border border-slate-800 bg-[#0a1428] p-3">
-        <div className="mb-3 flex items-center justify-end gap-2 px-1">
-          <h3 className="text-sm font-semibold text-emerald-300">{t(lang, "largestPaidInvoices")}</h3>
-          <CheckCircle2 className="size-4 text-emerald-400" />
-        </div>
-        <ul className="space-y-1.5">
-          {stats.paidList.map((item, i) => {
-            const meta = SERVICE_META[item.r.serviceType];
-            return (
-              <li key={item.r.id} className="flex items-center justify-between rounded-lg bg-[#0d1a2e] px-3 py-2">
-                <div className="text-sm font-bold text-emerald-300">{item.total.toLocaleString()} {t(lang, "dzd")}</div>
-                <div className="flex items-center gap-2">
-                  <div className="text-end">
-                    <div className="text-sm font-medium text-slate-100">{item.r.client}</div>
-                    <div className="text-[10px] text-slate-500">{meta.label}</div>
-                  </div>
-                  <span className={`grid size-7 place-items-center rounded-md ${meta.tone}`}>{meta.icon}</span>
-                  <span className="text-[10px] font-bold text-slate-500">#{i + 1}</span>
-                </div>
-              </li>
-            );
-          })}
-          {stats.paidList.length === 0 && (
-            <li className="py-6 text-center text-xs text-slate-500">—</li>
-          )}
-        </ul>
-      </div>
-    </div>
-  );
-}
-
-function KpiBox({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: number; tone: "cyan" | "emerald" | "rose" }) {
-  const tones = {
-    cyan: "text-cyan-300",
-    emerald: "text-emerald-300",
-    rose: "text-rose-300",
-  };
-  const { lang } = useCRM();
-  return (
-    <div className="rounded-xl border border-slate-800 bg-[#0a1428] p-3 text-end">
-      <div className={`flex items-center justify-end gap-1.5 text-[10px] ${tones[tone]}`}>
-        <span>{label}</span>
-        <span className={tones[tone]}>{icon}</span>
-      </div>
-      <div className={`mt-1 text-xl font-bold ${tones[tone]}`}>{value.toLocaleString()}</div>
-      <div className={`text-[10px] ${tones[tone]} opacity-70`}>{t(lang, "dzd")}</div>
-    </div>
-  );
-}
-
-function StatusCircle({ icon, count, label, tone }: { icon: React.ReactNode; count: number; label: string; tone: "rose" | "amber" | "emerald" }) {
-  const tones = {
-    rose: "border-rose-500/40 bg-rose-500/10 text-rose-300",
-    amber: "border-amber-500/40 bg-amber-500/10 text-amber-300",
-    emerald: "border-emerald-500/40 bg-emerald-500/10 text-emerald-300",
-  };
-  const text = { rose: "text-rose-300", amber: "text-amber-300", emerald: "text-emerald-300" }[tone];
-  return (
-    <div className="flex flex-col items-center gap-1.5">
-      <div className={`grid size-11 place-items-center rounded-full border-2 ${tones[tone]}`}>{icon}</div>
-      <div className={`text-xl font-bold ${text}`}>{count}</div>
-      <div className="text-[10px] text-slate-400">{label}</div>
-    </div>
-  );
+ const { records,lang } = useCRM();
+ const { accounts,expenses,isPending,isError,refresh,userId } = useWorkshop();
+ const [open,setOpen]=useState(false);
+ const [editing,setEditing]=useState<string|null>(null);
+ const [draft,setDraft]=useState({category:'parts',amount:'',description:'',expense_date:new Date().toISOString().slice(0,10),record_id:''});
+ const [busy,setBusy]=useState(false);
+ const activeIds = new Set(records.map(r=>r.id));
+ const activeAccounts=accounts.filter(a=>!a.deleted_at && activeIds.has(a.record_id));
+ const activeExpenses=expenses.filter(e=>!e.deleted_at && (!e.record_id || activeIds.has(e.record_id)));
+ const totals=financialSummary(activeAccounts,activeExpenses);
+ const money=(n:number)=>`${Number(n).toLocaleString()} ${t(lang,'dzd')}`;
+ function edit(expense?:ExpenseEntry) {
+  setEditing(expense?.id??null);
+  setDraft({category:expense?.category??'parts',amount:expense?String(expense.amount):'',description:expense?.description??'',expense_date:expense?.expense_date??new Date().toISOString().slice(0,10),record_id:expense?.record_id??''}); setOpen(true);
+ }
+ async function save(e:React.FormEvent) {
+  e.preventDefault(); if (busy || !Number.isFinite(Number(draft.amount)) || Number(draft.amount)<=0) return;
+  setBusy(true);
+  const values={...draft,amount:Number(draft.amount),record_id:draft.record_id||null,owner_id:userId};
+  const result=editing?await supabase.from('expense_logs').update(values).eq('id',editing):await supabase.from('expense_logs').insert(values);
+  setBusy(false); if(result.error){toast.error(wt(lang,'failed'));return;} await refresh();setOpen(false);
+ }
+ async function trash(id:string) { const {error}=await supabase.from('expense_logs').update({deleted_at:new Date().toISOString()}).eq('id',id);if(error)toast.error(wt(lang,'failed'));else await refresh(); }
+ if(isPending)return <div className="text-muted-foreground">{wt(lang,'loading')}</div>;
+ if(isError)return <Button onClick={()=>void refresh()}>{wt(lang,'retry')}</Button>;
+ return <div className="crm-controls space-y-6 text-foreground">
+  <h2 className="flex items-center gap-2 text-lg font-semibold"><DollarSign className="size-5 text-primary" />{t(lang,'financialSummary')}</h2>
+  <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">{([['billed',totals.revenue],['paid',totals.paid],['debt',totals.debt],['expenses',totals.costs],['profit',totals.profit]] as const).map(([key,value])=><div key={key} className="rounded-lg border border-border bg-card p-4"><p className="text-xs text-muted-foreground">{wt(lang,key)}</p><p className={`mt-2 break-words text-xl font-bold ${value<0?'text-destructive':'text-primary'}`}>{money(value)}</p></div>)}</div>
+  <section className="space-y-3"><h3 className="font-semibold">{wt(lang,'accounts')}</h3><div className="overflow-x-auto"><table className="w-full min-w-[650px] text-start text-sm"><thead className="border-b border-border text-muted-foreground"><tr>{[t(lang,'client'),wt(lang,'job'),wt(lang,'billed'),wt(lang,'paid'),wt(lang,'debt'),wt(lang,'expenses'),wt(lang,'profit')].map(h=><th key={h} className="p-3 text-start font-medium">{h}</th>)}</tr></thead><tbody>{activeAccounts.map(a=>{const costs=activeExpenses.filter(e=>e.record_id===a.record_id).reduce((s,e)=>s+Number(e.amount),0);const r=records.find(r=>r.id===a.record_id);return <tr key={a.id} className="border-b border-border"><td className="p-3">{a.client_name}</td><td className="p-3">Visite {r?.visitNumber}</td><td className="p-3">{money(a.total_bill)}</td><td className="p-3">{money(a.amount_paid)}</td><td className="p-3">{money(a.remaining_debt)}</td><td className="p-3">{money(costs)}</td><td className="p-3">{money(a.total_bill-costs)}</td></tr>;})}</tbody></table></div>{activeAccounts.length===0&&<p className="text-sm text-muted-foreground">{t(lang,'noResults')}</p>}</section>
+  <section className="space-y-3"><div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">{wt(lang,'expenseLogs')}</h3><Button onClick={()=>edit()}><Plus className="size-4" />{wt(lang,'addExpense')}</Button></div>
+   <div className="overflow-x-auto"><table className="w-full min-w-[650px] text-sm"><thead className="border-b border-border text-muted-foreground"><tr>{['date','description','job','expenses','amount'].map(key=><th key={key} className="p-3 text-start">{wt(lang,key)}</th>)}<th /></tr></thead><tbody>{activeExpenses.map(e=><tr key={e.id} className="border-b border-border"><td className="p-3">{e.expense_date}</td><td className="p-3">{e.description}</td><td className="p-3">{records.find(r=>r.id===e.record_id)?.client??wt(lang,'general')}</td><td className="p-3">{wt(lang,e.category)}</td><td className="p-3">{money(e.amount)}</td><td className="p-3"><div className="flex gap-1"><Button variant="ghost" size="icon" title={t(lang,'edit')} aria-label={t(lang,'edit')} onClick={()=>edit(e)}><Pencil className="size-4" /></Button><Button variant="ghost" size="icon" title={t(lang,'delete')} aria-label={t(lang,'delete')} onClick={()=>void trash(e.id)}><Trash2 className="size-4 text-destructive" /></Button></div></td></tr>)}</tbody></table></div>
+   {activeExpenses.length===0&&<p className="text-sm text-muted-foreground">{t(lang,'noResults')}</p>}
+  </section>
+  <Dialog open={open} onOpenChange={setOpen}><DialogContent className="crm-controls bg-card text-foreground"><DialogHeader><DialogTitle>{wt(lang,'addExpense')}</DialogTitle></DialogHeader><form onSubmit={save} className="space-y-3">
+   <label className="block space-y-1"><span>{wt(lang,'amount')}</span><input className={input} type="number" min="0.01" step="0.01" required value={draft.amount} onChange={e=>setDraft({...draft,amount:e.target.value})} /></label>
+   <label className="block space-y-1"><span>{wt(lang,'description')}</span><input className={input} required value={draft.description} onChange={e=>setDraft({...draft,description:e.target.value})} /></label>
+   <label className="block space-y-1"><span>{wt(lang,'expenses')}</span><select className={input} value={draft.category} onChange={e=>setDraft({...draft,category:e.target.value})}><option value="parts">{wt(lang,'parts')}</option><option value="labor">{wt(lang,'labor')}</option></select></label>
+   <label className="block space-y-1"><span>{wt(lang,'date')}</span><input className={input} type="date" required value={draft.expense_date} onChange={e=>setDraft({...draft,expense_date:e.target.value})} /></label>
+   <label className="block space-y-1"><span>{wt(lang,'job')}</span><select className={input} value={draft.record_id} onChange={e=>setDraft({...draft,record_id:e.target.value})}><option value="">{wt(lang,'general')}</option>{records.map(r=><option value={r.id} key={r.id}>{r.client} · Visite {r.visitNumber}</option>)}</select></label>
+   <Button type="submit" disabled={busy}>{t(lang,'save')}</Button>
+  </form></DialogContent></Dialog>
+ </div>;
 }

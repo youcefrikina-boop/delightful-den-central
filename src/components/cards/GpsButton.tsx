@@ -1,72 +1,31 @@
-import { useState } from "react";
-import { useCRM } from "@/context/CRMProvider";
-import { t } from "@/lib/i18n";
-import type { CRMRecord } from "@/lib/types";
-import { MapPin, Crosshair } from "lucide-react";
-
-export function GpsButton({ record }: { record: CRMRecord }) {
-  const { updateRecord, lang } = useCRM();
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-
-  const link = record.gps
-    ? `https://www.google.com/maps/search/?api=1&query=${record.gps.lat},${record.gps.lng}`
-    : record.zone
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(record.zone)}`
-    : null;
-
-  function capture() {
-    if (!("geolocation" in navigator)) {
-      setErr("Geolocation unsupported");
-      return;
-    }
-    setBusy(true);
-    setErr(null);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        updateRecord(record.id, {
-          gps: {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-            capturedAt: new Date().toISOString(),
-          },
-        });
-        setBusy(false);
-      },
-      (e) => {
-        setErr(e.message);
-        setBusy(false);
-      },
-      { enableHighAccuracy: true, timeout: 15000 },
-    );
-  }
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      <button
-        type="button"
-        onClick={capture}
-        disabled={busy}
-        className="inline-flex items-center gap-2 rounded-lg border border-cyan-500/40 bg-cyan-500/10 px-3 py-2 text-sm text-cyan-200 transition hover:bg-cyan-500/20 disabled:opacity-50"
-      >
-        <Crosshair className={`size-4 ${busy ? "animate-spin" : ""}`} /> {t(lang, "gpsCapture")}
-      </button>
-      {link && (
-        <a
-          href={link}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-[#0d1a2e] px-3 py-2 text-sm text-slate-200 hover:border-cyan-500/50"
-        >
-          <MapPin className="size-4" /> {t(lang, "gpsOpen")}
-        </a>
-      )}
-      {record.gps && (
-        <span className="self-center text-[10px] text-slate-500">
-          {record.gps.lat.toFixed(5)}, {record.gps.lng.toFixed(5)}
-        </span>
-      )}
-      {err && <span className="self-center text-[10px] text-red-300">{err}</span>}
-    </div>
-  );
+import { useState } from 'react';
+import { Copy, Crosshair, MapPin } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { useCRM } from '@/context/CRMProvider';
+import { LocationField } from './LocationField';
+import { locationQuery, mapsLink, wt } from '@/lib/workshop';
+import { t } from '@/lib/i18n';
+import type { CRMRecord } from '@/lib/types';
+export function GpsButton({record,compact=false}:{record:CRMRecord;compact?:boolean}) {
+ const {updateRecord,lang} = useCRM();
+ const [busy,setBusy] = useState(false);
+ const query = locationQuery(record);
+ function capture() {
+  if (!navigator.geolocation) { toast.error(wt(lang,'locationError')); return; }
+  setBusy(true);
+  navigator.geolocation.getCurrentPosition(async pos => {
+   await updateRecord(record.id,{gps:{lat:pos.coords.latitude,lng:pos.coords.longitude,capturedAt:new Date().toISOString()},manualLocation:`${pos.coords.latitude},${pos.coords.longitude}`}); setBusy(false);
+  },() => { setBusy(false); toast.error(wt(lang,'locationError')); },{enableHighAccuracy:true,timeout:15000});
+ }
+ return <div className="crm-controls space-y-2">
+  {!compact && <LocationField value={record.manualLocation ?? ''} onChange={manualLocation => void updateRecord(record.id,{manualLocation})} />}
+  <div className="flex flex-wrap gap-1">
+   {!compact && <Button type="button" variant="outline" disabled={busy} onClick={capture}><Crosshair className="size-4" />{t(lang,'gpsCapture')}</Button>}
+   {query && <>
+    <Button type="button" variant="outline" size={compact?'icon':'default'} asChild><a href={mapsLink(query)} target="_blank" rel="noreferrer" title="Google Maps" aria-label="Google Maps"><MapPin className="size-4" />{!compact && t(lang,'gpsOpen')}</a></Button>
+    <Button type="button" variant="outline" size="icon" title={wt(lang,'copy')} aria-label={wt(lang,'copy')} onClick={() => void navigator.clipboard.writeText(query).then(() => toast.success(wt(lang,'copied'))).catch(() => toast.error(wt(lang,'failed')))}><Copy className="size-4" /></Button>
+   </>}
+  </div>
+ </div>;
 }

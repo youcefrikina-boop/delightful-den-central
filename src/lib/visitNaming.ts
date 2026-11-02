@@ -1,5 +1,6 @@
 import type { CRMRecord, Lang, Visit } from "./types";
 import { t } from "./i18n";
+import { nextVisit } from './workshop';
 
 export function visitLabel(n: number, lang: Lang): string {
   return `${t(lang, "visit")} ${n}`;
@@ -8,13 +9,12 @@ export function visitLabel(n: number, lang: Lang): string {
 /** Compute the next visit number for a phone across all records. */
 export function nextVisitNumberForPhone(records: CRMRecord[], phone: string, excludeId?: string): number {
   if (!phone.trim()) return 1;
-  const same = records.filter((r) => r.phone.trim() === phone.trim() && r.id !== excludeId);
-  return same.length + 1;
+  return nextVisit(records.filter(r => r.id !== excludeId), phone);
 }
 
 /** Append-only label for inner-visit list (V2, V3, ...). */
 export function nextInnerVisitLabel(existing: Visit[], lang: Lang): string {
-  return visitLabel(existing.length + 1, lang);
+  return `Visite ${existing.length + 1}`;
 }
 
 /** Previous record (same phone) that has a completionDate, used for healthy run-time. */

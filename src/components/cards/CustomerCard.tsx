@@ -10,6 +10,8 @@ import { calculateTempsAttente } from "@/lib/calculateTempsAttente";
 import { useCRM } from "@/context/CRMProvider";
 import { TasksChecklist } from "@/components/cards/TasksChecklist";
 import { WarrantyCard } from "@/components/cards/WarrantyCard";
+import { DailyPlanToggle } from '@/components/cards/DailyPlanToggle';
+import { GpsButton } from '@/components/cards/GpsButton';
 
 interface Props {
   record: CRMRecord;
@@ -172,6 +174,10 @@ export function CustomerCard({ record, lang, onEdit, onDelete, onShowDetails }: 
       )}
 
       <div className="px-4 pb-3"><TasksChecklist record={record} /></div>
+      <div className="crm-controls flex flex-wrap gap-2 px-4 pb-3">
+        <DailyPlanToggle active={record.inDailyPlan} disabled={record.status === 'done'} onToggle={() => void updateRecord(record.id, {inDailyPlan: !record.inDailyPlan})} />
+        <GpsButton record={record} compact />
+      </div>
 
       {/* Financial footer */}
       <div className="mt-auto flex items-center justify-between border-t border-slate-800 bg-[#0a1428]/60 px-4 py-2.5">

@@ -156,4 +156,9 @@
   --input: var(--border);
   --destructive: oklch(0.74 0.16 25);
   --ring: var(--primary);
+  --card: oklch(0.18 0.04 260);
+  --card-foreground: var(--foreground);
+  --secondary: oklch(0.25 0.04 260);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--secondary);
 }

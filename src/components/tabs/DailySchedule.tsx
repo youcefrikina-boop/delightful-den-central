@@ -20,7 +20,7 @@ export function DailySchedule() {
 
   const data = useMemo(() => {
     const today = new Date().toDateString();
-    const todayList = records.filter((r) => r.appointment && new Date(r.appointment).toDateString() === today);
+    const todayList = records.filter((r) => r.status !== 'done' && !r.archivedAt && (r.inDailyPlan || (r.appointment && new Date(r.appointment).toDateString() === today)));
     const waitingList = records.filter((r) => r.status === "waiting");
     return { todayList, waitingList };
   }, [records]);

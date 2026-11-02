@@ -1,69 +1,32 @@
-import { useMemo, useState } from "react";
-import { FAULT_CODES } from "@/lib/faultCodes";
-import { useCRM } from "@/context/CRMProvider";
-import { t } from "@/lib/i18n";
-import { AlertTriangle, Search } from "lucide-react";
-
-export function FaultSearch() {
-  const { lang } = useCRM();
-  const [q, setQ] = useState("");
-  const [brand, setBrand] = useState<string>("");
-
-  const brands = useMemo(() => Array.from(new Set(FAULT_CODES.map((f) => f.brand))).sort(), []);
-  const filtered = FAULT_CODES.filter((f) => {
-    if (brand && f.brand !== brand) return false;
-    const blob = `${f.code} ${f.brand} ${f.symptom} ${f.cause} ${f.fix}`.toLowerCase();
-    return blob.includes(q.toLowerCase());
-  });
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 text-cyan-300">
-        <AlertTriangle className="size-5" />
-        <h2 className="text-lg font-semibold">{t(lang, "tab_faults")}</h2>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-800 bg-[#0a1428] p-3">
-        <Search className="size-4 text-slate-400" />
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder={t(lang, "search") + " — F22, EA1…"}
-          className="flex-1 rounded-md border border-slate-700 bg-[#0d1a2e] px-2 py-1 text-sm text-slate-100"
-        />
-        <select
-          value={brand}
-          onChange={(e) => setBrand(e.target.value)}
-          className="rounded-md border border-slate-700 bg-[#0d1a2e] px-2 py-1 text-sm text-slate-100"
-        >
-          <option value="">{t(lang, "brand")}</option>
-          {brands.map((b) => <option key={b} value={b}>{b}</option>)}
-        </select>
-      </div>
-
-      {filtered.length === 0 && (
-        <div className="rounded-xl border border-dashed border-slate-700 p-6 text-center text-sm text-slate-400">
-          {t(lang, "noResults")}
-        </div>
-      )}
-
-      <div className="grid gap-3 md:grid-cols-2">
-        {filtered.map((f) => (
-          <article key={`${f.brand}-${f.code}`} className="rounded-xl border border-slate-800 bg-[#0a1428] p-4">
-            <header className="flex items-baseline justify-between">
-              <span className="rounded-md border border-amber-500/40 bg-amber-500/15 px-2 py-0.5 font-mono text-sm font-bold text-amber-200">
-                {f.code}
-              </span>
-              <span className="text-xs uppercase text-slate-400">{f.brand}</span>
-            </header>
-            <h3 className="mt-2 font-semibold text-slate-100">{f.symptom}</h3>
-            <p className="mt-1 text-xs text-slate-400">{f.cause}</p>
-            <p className="mt-2 rounded-md border border-emerald-500/30 bg-emerald-500/5 p-2 text-xs text-emerald-200">
-              ✦ {f.fix}
-            </p>
-          </article>
-        ))}
-      </div>
-    </div>
-  );
+import { useState } from 'react';
+import { AlertTriangle, Plus, Pencil, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useCRM } from '@/context/CRMProvider';
+import { useWorkshop, type FaultEntry } from '@/lib/useWorkshop';
+import { supabase } from '@/integrations/supabase/client';
+import { wt } from '@/lib/workshop';
+import { t } from '@/lib/i18n';
+const input='w-full rounded-md border border-input bg-background px-3 py-2 text-sm';
+export function FaultSearch(){
+ const {lang}=useCRM();const {faults,isPending,isError,refresh,userId}=useWorkshop();
+ const [brand,setBrand]=useState('');const [code,setCode]=useState('');const [q,setQ]=useState('');
+ const [open,setOpen]=useState(false);const [editing,setEditing]=useState<string|null>(null);const [busy,setBusy]=useState(false);
+ const [draft,setDraft]=useState({brand:'',code:'',problem:'',cause:'',solution:''});
+ const active=faults.filter(f=>!f.deleted_at);
+ const brands=Array.from(new Set(active.map(f=>f.brand))).sort();
+ const codes=Array.from(new Set(active.filter(f=>!brand||f.brand===brand).map(f=>f.code))).sort();
+ const filtered=active.filter(f=>(!brand||f.brand===brand)&&(!code||f.code===code)&&`${f.brand} ${f.code} ${f.problem} ${f.cause} ${f.solution}`.toLowerCase().includes(q.toLowerCase()));
+ function edit(f?:FaultEntry){setEditing(f?.id??null);setDraft({brand:f?.brand??'',code:f?.code??'',problem:f?.problem??'',cause:f?.cause??'',solution:f?.solution??''});setOpen(true);}
+ async function save(e:React.FormEvent){e.preventDefault();if(busy)return;setBusy(true);const values={...draft,owner_id:userId,updated_at:new Date().toISOString()};const result=editing?await supabase.from('fault_guide').update(values).eq('id',editing):await supabase.from('fault_guide').insert(values);setBusy(false);if(result.error){toast.error(wt(lang,'failed'));return;}await refresh();setOpen(false);}
+ async function trash(id:string){const {error}=await supabase.from('fault_guide').update({deleted_at:new Date().toISOString()}).eq('id',id);if(error)toast.error(wt(lang,'failed'));else await refresh();}
+ if(isPending)return <p>{wt(lang,'loading')}</p>;if(isError)return <Button onClick={()=>void refresh()}>{wt(lang,'retry')}</Button>;
+ return <div className="crm-controls space-y-4 text-foreground">
+  <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="flex items-center gap-2 text-lg font-semibold"><AlertTriangle className="size-5 text-primary" />{t(lang,'tab_faults')}</h2><Button onClick={()=>edit()}><Plus className="size-4" />{wt(lang,'addFault')}</Button></div>
+  <div className="grid gap-2 sm:grid-cols-3"><input aria-label={t(lang,'search')} className={input} value={q} onChange={e=>setQ(e.target.value)} placeholder={t(lang,'search')} /><select aria-label={t(lang,'brand')} className={input} value={brand} onChange={e=>{setBrand(e.target.value);setCode('');}}><option value="">{wt(lang,'allBrands')}</option>{brands.map(b=><option key={b}>{b}</option>)}</select><select aria-label={wt(lang,'code')} className={input} value={code} onChange={e=>setCode(e.target.value)}><option value="">{wt(lang,'allCodes')}</option>{codes.map(c=><option key={c}>{c}</option>)}</select></div>
+  {filtered.length===0&&<p className="py-6 text-center text-muted-foreground">{t(lang,'noResults')}</p>}
+  <div className="grid gap-3 md:grid-cols-2">{filtered.map(f=><article key={f.id} className="rounded-lg border border-border bg-card p-4"><header className="flex flex-wrap items-center justify-between gap-2"><strong className="font-mono text-primary">{f.code}</strong><span>{f.brand}</span><div className="flex gap-1">{f.owner_id===userId?<><Button variant="ghost" size="icon" title={t(lang,'edit')} aria-label={t(lang,'edit')} onClick={()=>edit(f)}><Pencil className="size-4" /></Button><Button variant="ghost" size="icon" title={t(lang,'delete')} aria-label={t(lang,'delete')} onClick={()=>void trash(f.id)}><Trash2 className="size-4 text-destructive" /></Button></>:<span className="text-xs text-muted-foreground">{wt(lang,'reference')}</span>}</div></header><h3 className="mt-3 font-semibold">{f.problem}</h3>{f.cause&&<p className="mt-1 text-sm text-muted-foreground">{f.cause}</p>}<p className="mt-3 border-s-2 border-primary ps-3 text-sm">{f.solution}</p></article>)}</div>
+  <Dialog open={open} onOpenChange={setOpen}><DialogContent className="crm-controls bg-card text-foreground"><DialogHeader><DialogTitle>{wt(lang,'addFault')}</DialogTitle></DialogHeader><form onSubmit={save} className="space-y-3">{(['brand','code','problem','solution'] as const).map(key=><label key={key} className="block space-y-1"><span>{key==='brand'?t(lang,'brand'):wt(lang,key)}</span>{key==='problem'||key==='solution'?<textarea required className={input} value={draft[key]} onChange={e=>setDraft({...draft,[key]:e.target.value})}/>:<input required className={input} value={draft[key]} onChange={e=>setDraft({...draft,[key]:e.target.value})}/>}</label>)}<Button type="submit" disabled={busy}>{t(lang,'save')}</Button></form></DialogContent></Dialog>
+ </div>;
 }

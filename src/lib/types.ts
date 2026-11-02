@@ -97,6 +97,8 @@ export interface CRMRecord {
   inDailyPlan: boolean;
   archivedAt?: string;
   gps?: GpsPoint;
+  manualLocation?: string;
+  previousRecordId?: string;
   nextMaintenanceDate?: string;
   maintenanceAlertDays?: number;
 }

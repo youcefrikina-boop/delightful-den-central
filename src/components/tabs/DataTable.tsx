@@ -214,7 +214,7 @@ export function DataTable({ selectedRecords, hideSearch = false }: { selectedRec
 
                   <div className="flex flex-wrap items-center gap-2 pt-2">
                     <GpsButton record={r} />
-                    <DailyPlanToggle active={r.inDailyPlan} onToggle={() => updateRecord(r.id, { inDailyPlan: !r.inDailyPlan })} />
+                    <DailyPlanToggle active={r.inDailyPlan} disabled={r.status === 'done'} onToggle={() => void updateRecord(r.id, { inDailyPlan: !r.inDailyPlan })} />
                     {r.phone && (
                       <a href={`tel:${r.phone}`} className="rounded-lg border border-slate-700 bg-[#0d1a2e] px-3 py-2 text-sm text-slate-200 hover:border-cyan-500/50">
                         📞 {r.phone}

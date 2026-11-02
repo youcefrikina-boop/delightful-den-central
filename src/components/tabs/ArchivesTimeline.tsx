@@ -3,9 +3,10 @@ import { useCRM } from "@/context/CRMProvider";
 import type { CRMRecord } from "@/lib/types";
 import { t } from "@/lib/i18n";
 import { Archive, RotateCcw } from "lucide-react";
+import { wt } from '@/lib/workshop';
 
 export function ArchivesTimeline() {
-  const { records, updateRecord, lang } = useCRM();
+  const { records, restartVisit, lang } = useCRM();
   const archived = records.filter((r) => r.status === "done" || r.status === "cancelled" || r.archivedAt);
 
   const grouped = useMemo(() => {
@@ -60,10 +61,11 @@ export function ArchivesTimeline() {
                       {t(lang, "st_" + r.status)}
                     </span>
                     <button
-                      onClick={() => updateRecord(r.id, { status: "waiting", archivedAt: undefined })}
+                      disabled={records.some(item => item.previousRecordId === r.id && item.status === 'waiting')}
+                      onClick={() => void restartVisit(r.id)}
                       className="inline-flex items-center gap-1 rounded-md border border-slate-700 px-2 py-1 text-slate-300 hover:border-cyan-500/50"
                     >
-                      <RotateCcw className="size-3" /> {t(lang, "restore")}
+                      <RotateCcw className="size-3" /> {wt(lang, 'newVisit')}
                     </button>
                   </div>
                 </div>
