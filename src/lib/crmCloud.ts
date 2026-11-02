@@ -10,6 +10,7 @@ interface RecordRow {
   owner_id: string;
   data: CRMRecord;
   updated_at: string;
+  deleted_at?: string | null;
 }
 
 function migrateRecord(r: CRMRecord): CRMRecord {
@@ -28,9 +29,21 @@ export async function fetchRecords(userId: string): Promise<CRMRecord[]> {
     .from("crm_records")
     .select("id, owner_id, data, updated_at")
     .eq("owner_id", userId)
+    .is('deleted_at', null)
     .order("updated_at", { ascending: false });
   if (error) throw error;
   return (data as unknown as RecordRow[]).map((r) => migrateRecord({ ...r.data, id: r.id }));
+}
+
+export async function fetchTrashedRecords(userId: string): Promise<CRMRecord[]> {
+  const { data, error } = await supabase.from('crm_records').select('id, data').eq('owner_id', userId).not('deleted_at', 'is', null);
+  if (error) throw error;
+  return (data ?? []).map(row => migrateRecord({ ...(row.data as unknown as CRMRecord), id: row.id }));
+}
+
+export async function setRecordDeleted(id: string, deleted: boolean) {
+  const { error } = await supabase.from('crm_records').update({ deleted_at: deleted ? new Date().toISOString() : null }).eq('id', id);
+  if (error) throw error;
 }
 
 export async function insertRecord(userId: string, record: CRMRecord) {
@@ -52,7 +65,7 @@ export async function updateRecordCloud(record: CRMRecord) {
 }
 
 export async function deleteRecordCloud(id: string) {
-  const { error } = await supabase.from("crm_records").delete().eq("id", id);
+  const { error } = await supabase.from("crm_records").delete().eq("id", id).not('deleted_at', 'is', null);
   if (error) throw error;
 }
 
