@@ -18,7 +18,7 @@ export function Accounting() {
  const [draft,setDraft]=useState({category:'parts',amount:'',description:'',expense_date:new Date().toISOString().slice(0,10),record_id:''});
  const [busy,setBusy]=useState(false);
  const activeIds = new Set(records.map(r=>r.id));
- const activeAccounts=accounts.filter(a=>!a.deleted_at && activeIds.has(a.record_id));
+ const activeAccounts=accounts.filter(a=>!a.deleted_at && activeIds.has(a.record_id)).map(a=>({...a,total_bill:a.total_bill??0,remaining_debt:a.remaining_debt??0}));
  const activeExpenses=expenses.filter(e=>!e.deleted_at && (!e.record_id || activeIds.has(e.record_id)));
  const totals=financialSummary(activeAccounts,activeExpenses);
  const money=(n:number)=>`${Number(n).toLocaleString()} ${t(lang,'dzd')}`;

@@ -11,12 +11,15 @@ import { Accounting } from "@/components/tabs/Accounting";
 import { RadarDispatcher } from "@/components/tabs/RadarDispatcher";
 import { ArchivesTimeline } from "@/components/tabs/ArchivesTimeline";
 import { KanbanBoard } from "@/components/tabs/KanbanBoard";
+import { TrashBin } from '@/components/tabs/TrashBin';
+import { Button } from '@/components/ui/button';
+import { wt } from '@/lib/workshop';
 import {
   Wrench, Users, TrendingUp, Clock, Plus, LayoutGrid, List,
-  Globe, ChevronDown, UserCircle2, Settings, LogOut, Check,
+  Globe, ChevronDown, UserCircle2, Settings, LogOut, Check, Trash2,
 } from "lucide-react";
 
-type TabKey = "clients" | "kanban" | "schedule" | "radar" | "archives" | "faults" | "stats" | "accounting";
+type TabKey = "clients" | "kanban" | "schedule" | "radar" | "archives" | "faults" | "stats" | "accounting" | 'trash';
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "clients", label: "clientManagement" },
@@ -197,7 +200,12 @@ export function AppShell() {
         </nav>
       </header>
 
-      <main className="mx-auto max-w-[1600px] px-4 py-5">
+      <div className="mx-auto flex max-w-[1600px] items-start">
+      <aside className="crm-controls sticky top-44 hidden shrink-0 px-3 py-5 lg:block">
+        <Button variant={tab === 'trash' ? 'default' : 'outline'} onClick={() => setTab('trash')}><Trash2 className="size-4" />{wt(lang,'trash')}</Button>
+      </aside>
+      <main className="min-w-0 flex-1 px-4 py-5">
+        <div className="crm-controls mb-4 lg:hidden"><Button variant={tab === 'trash' ? 'default' : 'outline'} onClick={() => setTab('trash')}><Trash2 className="size-4" />{wt(lang,'trash')}</Button></div>
         {showNew && (
           <div className="mb-5 rounded-xl border border-cyan-500/30 bg-[#0a1428] p-4">
             <div className="mb-3 flex items-center justify-between">
@@ -216,7 +224,9 @@ export function AppShell() {
         {tab === "faults" && <FaultSearch />}
         {tab === "stats" && <Statistics />}
         {tab === "accounting" && <Accounting />}
+        {tab === 'trash' && <TrashBin />}
       </main>
+      </div>
 
       {/* Profile settings modal */}
       {settingsOpen && (

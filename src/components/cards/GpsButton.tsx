@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Copy, Crosshair, MapPin } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Copy, Crosshair, MapPin, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useCRM } from '@/context/CRMProvider';
@@ -10,6 +10,8 @@ import type { CRMRecord } from '@/lib/types';
 export function GpsButton({record,compact=false}:{record:CRMRecord;compact?:boolean}) {
  const {updateRecord,lang} = useCRM();
  const [busy,setBusy] = useState(false);
+ const [locationDraft,setLocationDraft] = useState(record.manualLocation ?? '');
+ useEffect(() => { setLocationDraft(record.manualLocation ?? ''); },[record.manualLocation]);
  const query = locationQuery(record);
  function capture() {
   if (!navigator.geolocation) { toast.error(wt(lang,'locationError')); return; }
@@ -19,7 +21,7 @@ export function GpsButton({record,compact=false}:{record:CRMRecord;compact?:bool
   },() => { setBusy(false); toast.error(wt(lang,'locationError')); },{enableHighAccuracy:true,timeout:15000});
  }
  return <div className="crm-controls space-y-2">
-  {!compact && <LocationField value={record.manualLocation ?? ''} onChange={manualLocation => void updateRecord(record.id,{manualLocation})} />}
+  {!compact && <><LocationField value={locationDraft} onChange={setLocationDraft} /><Button type="button" size="icon" variant="outline" title={t(lang,'save')} aria-label={t(lang,'save')} disabled={busy || locationDraft === (record.manualLocation ?? '')} onClick={async () => {setBusy(true);await updateRecord(record.id,{manualLocation:locationDraft});setBusy(false);}}><Save className="size-4" /></Button></>}
   <div className="flex flex-wrap gap-1">
    {!compact && <Button type="button" variant="outline" disabled={busy} onClick={capture}><Crosshair className="size-4" />{t(lang,'gpsCapture')}</Button>}
    {query && <>

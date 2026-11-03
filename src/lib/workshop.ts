@@ -76,7 +76,7 @@ export function mapsLink(query: string) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
-export function financialSummary(accounts: { total_bill: number; amount_paid: number; remaining_debt: number }[], expenses: { amount: number }[]) {
+export function financialSummary(accounts: { total_bill: number | null; amount_paid: number; remaining_debt: number | null }[], expenses: { amount: number }[]) {
   const revenue = accounts.reduce((sum, a) => sum + Number(a.total_bill), 0);
   const paid = accounts.reduce((sum, a) => sum + Number(a.amount_paid), 0);
   const debt = accounts.reduce((sum, a) => sum + Number(a.remaining_debt), 0);
