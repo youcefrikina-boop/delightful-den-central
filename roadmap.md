@@ -1,4 +1,7 @@
 # Tasks
+- [ ] Add customer-card subscription editor with cloned contact data and intervention history.
+- [ ] Add installation, sanitary, intervention, payment, warranty and annual reminder controls.
+- [ ] Verify subscription saving, cancellation and mobile layout.
 - [x] Preserve stored customer and technical text across UI languages.
 - [x] Add manual location input, copy and Google Maps access; clipboard and link verified.
 - [x] Enforce completed daily-plan removal and next-visit archive restoration.

@@ -70,6 +70,7 @@ export interface GpsPoint {
 }
 
 export interface CRMRecord {
+  subscription?: import('./subscription').MaintenanceSubscription;
   id: string;
   createdAt: string;          // Date Commande (editable)
   completionDate?: string;    // Date Fin (editable)
