@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { useCRM } from '@/context/CRMProvider';
 import type { CRMRecord, Lang } from '@/lib/types';
-import { createSubscription, interventionHistory, resizeItems, subscriptionPatch, annualDate, st, type MaintenanceSubscription, type EmitterKind } from '@/lib/subscription';
+import { createSubscription, interventionHistory, resizeItems, subscriptionPatch, annualDate, quoteSummary, st, type MaintenanceSubscription, type EmitterKind } from '@/lib/subscription';
 import { t } from '@/lib/i18n';
 
 const inputClass = 'min-w-0 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring';
@@ -29,6 +29,7 @@ export function SubscriptionModal({record,onClose}: {record:CRMRecord;onClose:()
   const addOption=(key:'customMaterials'|'customDiameters',value:string)=>setDraft(d=>({...d,[key]:[...new Set([...d[key],value])]}));
   async function save(e:FormEvent) {e.preventDefault();if(saving)return;setSaving(true);try {if(await updateRecord(record.id,subscriptionPatch(draft))){toast.success(st(lang,'saved'));onClose();}} finally {setSaving(false);} }
   const reminderDays=Math.ceil((new Date(draft.nextMaintenanceDate+'T00:00:00').getTime()-Date.now())/86400000);
+  const quote=quoteSummary(draft);
   return <Dialog open onOpenChange={open=>!open && !saving && onClose()}><DialogContent dir={lang==='ar'?'rtl':'ltr'} className="crm-controls flex max-h-[94dvh] w-[calc(100%-1rem)] max-w-4xl flex-col gap-0 overflow-hidden rounded-lg border-border bg-background p-0 text-foreground [&>button]:text-foreground">
     <header className="border-b border-border px-5 py-4 pe-14"><DialogTitle className="flex items-center gap-2 text-lg tracking-normal"><ClipboardList className="size-5 text-primary"/>{st(lang,'title')}</DialogTitle><DialogDescription className="mt-1 break-words text-start text-muted-foreground">{draft.contact.name}</DialogDescription></header>
     <form onSubmit={save} className="flex min-h-0 flex-1 flex-col"><div className="min-h-0 flex-1 overflow-y-auto px-4 sm:px-6">
