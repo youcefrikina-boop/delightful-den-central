@@ -18,6 +18,8 @@ export function MaintenanceClock({ record }: { record: CRMRecord }) {
   const overdue = days < 0;
   const nearing = !overdue && days <= alertDays;
 
+  if (record.subscription && (!record.subscription.active || !record.subscription.reminderEnabled)) return null;
+
   return (
     <div className={`rounded-xl border p-3 ${overdue ? "border-red-500/60 bg-red-500/10" : nearing ? "border-amber-500/60 bg-amber-500/10" : "border-slate-700/60 bg-[#0d1a2e]/60"}`}>
       <div className="mb-1 flex items-center justify-between gap-2 text-xs uppercase tracking-wide text-slate-300">
