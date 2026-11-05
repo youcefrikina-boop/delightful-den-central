@@ -2,7 +2,7 @@ import { describe,test } from 'node:test';
 import { strictEqual,deepStrictEqual } from 'node:assert';
 import { annualDate,createSubscription,resizeItems,interventionHistory,subscriptionPatch,st } from './subscription';
 import type { CRMRecord } from './types';
-const r:CRMRecord={id:'1',client:'Riki',phone:'055555',zone:'Alger',gps:{lat:36.7,lng:3.1,capturedAt:'2026-01-01'},manualLocation:'36.7,3.1',brand:'',model:'',serviceType:'boiler',installationLocation:'home',status:'done',createdAt:'2026-11-04T10:00:00Z',payment:{advance:20},visits:[],visitNumber:1,inDailyPlan:false};
+const r:CRMRecord={id:'1',client:'Riki',phone:'055555',zone:'Alger',fault:'Pressure loss',gps:{lat:36.7,lng:3.1,capturedAt:'2026-01-01'},manualLocation:'36.7,3.1',brand:'',model:'',serviceType:'boiler',installationLocation:'home',status:'done',createdAt:'2026-11-04T10:00:00Z',payment:{advance:20},visits:[],visitNumber:1,inDailyPlan:false};
 describe('maintenance subscription rules',()=>{
  test('clones name phone address and GPS without mutating original',()=>{const s=createSubscription(r);deepStrictEqual(s.contact,{name:'Riki',phone:'055555',address:'Alger',manualLocation:'36.7,3.1',gps:r.gps});s.contact.gps && (s.contact.gps.lat=1);strictEqual(r.gps?.lat,36.7);});
  test('radiator counters keep independent diameters by material',()=>{let items=resizeItems([], 'aluminium',1);items[0].diameter='16 mm';items=resizeItems(items,'steel',1);strictEqual(items[0].diameter,'16 mm');strictEqual(items[1].material,'steel');strictEqual(resizeItems(items,'steel',-1).length,1);strictEqual(resizeItems([],'castIron',-1).length,0);});

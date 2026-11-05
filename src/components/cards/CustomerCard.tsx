@@ -184,7 +184,7 @@ export function CustomerCard({ record, lang, onEdit, onDelete, onShowDetails }: 
         <GpsButton record={record} compact />
         <Button type="button" size="sm" variant={record.subscription ? 'default' : 'outline'} onClick={() => setSubscriptionOpen(true)}><CalendarClock />{st(lang,'subscription')}</Button>
       </div>
-      {record.subscription?.active && record.subscription.reminderEnabled && record.nextMaintenanceDate && <div className="crm-controls px-4 pb-3 text-xs text-primary"><CalendarClock className="me-1 inline size-3" />{st(lang, new Date(record.nextMaintenanceDate).getTime() - Date.now() <= (record.maintenanceAlertDays ?? 7) * 86400000 ? 'due' : 'scheduled')} · {record.nextMaintenanceDate}</div>}
+      {record.subscription?.active && record.subscription.reminderEnabled && record.nextMaintenanceDate && <div className="crm-controls px-4 pb-3 text-xs text-primary"><CalendarClock className="me-1 inline size-3" />{st(lang, new Date(record.nextMaintenanceDate).getTime() <= Date.now() ? 'due' : new Date(record.nextMaintenanceDate).getTime() - Date.now() <= (record.maintenanceAlertDays ?? 7) * 86400000 ? 'soon' : 'scheduled')} · {record.nextMaintenanceDate}</div>}
       {subscriptionOpen && <SubscriptionModal record={record} onClose={() => setSubscriptionOpen(false)} />}
 
       {/* Financial footer */}
