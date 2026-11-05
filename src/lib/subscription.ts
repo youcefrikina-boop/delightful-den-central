@@ -32,7 +32,8 @@ export function createSubscription(r: CRMRecord): MaintenanceSubscription {
 }
 export function resizeItems(items: InstallationItem[], kind: EmitterKind, change: number) {
   if (change > 0) return [...items,{id:crypto.randomUUID(),kind,material:['aluminium','steel','castIron'].includes(kind) ? kind : '',diameter:''}];
-  const index = items.findLastIndex(i => i.kind === kind);
+  let index = -1;
+  items.forEach((item, i) => { if (item.kind === kind) index = i; });
   return items.filter((_,i) => i !== index);
 }
 export function interventionHistory(record: CRMRecord, records: CRMRecord[]) {

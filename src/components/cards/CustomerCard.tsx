@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import {
   Trash2, Pencil, FileText, Wrench, MapPin, Clock, Sparkles, Hourglass,
   ChevronDown, Search as SearchIcon, ShieldCheck, X, ClipboardCheck,
+  CalendarClock,
 } from "lucide-react";
 import type { CRMRecord, Lang, Warranty } from "@/lib/types";
 import { t } from "@/lib/i18n";
@@ -12,6 +13,9 @@ import { TasksChecklist } from "@/components/cards/TasksChecklist";
 import { WarrantyCard } from "@/components/cards/WarrantyCard";
 import { DailyPlanToggle } from '@/components/cards/DailyPlanToggle';
 import { GpsButton } from '@/components/cards/GpsButton';
+import { Button } from '@/components/ui/button';
+import { SubscriptionModal } from '@/components/cards/SubscriptionModal';
+import { st } from '@/lib/subscription';
 
 interface Props {
   record: CRMRecord;
@@ -35,6 +39,7 @@ function warrantyTone(w: Warranty | undefined): WarrantyTone {
 export function CustomerCard({ record, lang, onEdit, onDelete, onShowDetails }: Props) {
   const { records, updateRecord } = useCRM();
   const [warrantyOpen, setWarrantyOpen] = useState(false);
+  const [subscriptionOpen, setSubscriptionOpen] = useState(false);
 
   const totals = paymentTotals(record.payment);
   const wait = calculateTempsAttente(record, lang);
@@ -177,7 +182,10 @@ export function CustomerCard({ record, lang, onEdit, onDelete, onShowDetails }: 
       <div className="crm-controls flex flex-wrap gap-2 px-4 pb-3">
         <DailyPlanToggle active={record.inDailyPlan} disabled={record.status === 'done'} onToggle={() => void updateRecord(record.id, {inDailyPlan: !record.inDailyPlan})} />
         <GpsButton record={record} compact />
+        <Button type="button" size="sm" variant={record.subscription ? 'default' : 'outline'} onClick={() => setSubscriptionOpen(true)}><CalendarClock />{st(lang,'subscription')}</Button>
       </div>
+      {record.subscription?.active && record.subscription.reminderEnabled && record.nextMaintenanceDate && <div className="crm-controls px-4 pb-3 text-xs text-primary"><CalendarClock className="me-1 inline size-3" />{st(lang, new Date(record.nextMaintenanceDate).getTime() <= Date.now() ? 'due' : new Date(record.nextMaintenanceDate).getTime() - Date.now() <= (record.maintenanceAlertDays ?? 7) * 86400000 ? 'soon' : 'scheduled')} · {record.nextMaintenanceDate}</div>}
+      {subscriptionOpen && <SubscriptionModal record={record} onClose={() => setSubscriptionOpen(false)} />}
 
       {/* Financial footer */}
       <div className="mt-auto flex items-center justify-between border-t border-slate-800 bg-[#0a1428]/60 px-4 py-2.5">
