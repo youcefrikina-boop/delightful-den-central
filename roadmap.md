@@ -1,4 +1,8 @@
 # Tasks
+- [ ] Stabilize daily planning for custom dropdown values.
+- [ ] Synchronize editable dropdowns across forms, list and global filters.
+- [ ] Reorder customer contact/date details and add three-state subscription action.
+- [ ] Verify saved flows and sticky collapsible filters on desktop and mobile.
 - [x] Add customer-card subscription editor with cloned contact data and intervention history.
 - [x] Add installation, sanitary, intervention, payment, warranty and annual in-app reminder controls.
 - [x] Verify subscription saving, cancellation and mobile layout; 21 tests pass and temporary customer removed.
